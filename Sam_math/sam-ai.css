@@ -61,3 +61,16 @@ body.light-theme{background:radial-gradient(ellipse at 50% -10%,#dcdcff 0,transp
 .light-theme .attach-btn:hover{border-color:var(--cyan)}
 .light-theme .attachment-preview{background:#edf2ff;border-color:#d3dcef}
 @media(max-width:560px){.attachment-row{padding-inline:10px}.attachment-hint{font-size:.68rem}}
+
+/* ===== Voice controls ===== */
+.voice-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:0 14px 12px}
+.voice-toggle{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.78rem;cursor:pointer;user-select:none}
+.voice-toggle input{accent-color:var(--purple);margin:0;width:auto}
+.voice-toggle input:disabled+span{opacity:.5}
+.voice-status{flex-basis:100%;color:var(--cyan);font-size:.76rem;min-height:1em}
+.attach-btn.listening{border-color:#fb7185;color:#fff;background:#4c1d2e;animation:pulse 1.1s infinite}
+.light-theme .voice-toggle{color:#465574}
+.light-theme .attach-btn.listening{background:#ffe4ea;color:#9f1239}
+@media(max-width:560px){.voice-row{padding:0 10px 10px}}
+
+[hidden]{display:none!important}

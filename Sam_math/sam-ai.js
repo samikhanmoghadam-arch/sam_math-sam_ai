@@ -359,6 +359,85 @@
     if (removeAttachmentButton) removeAttachmentButton.addEventListener('click', resetAttachment);
   }
 
+  // ===== Voice input: press the mic, speak, and the recognized text is sent automatically =====
+  const micButton = $('micButton');
+  const voiceStatus = $('voiceStatus');
+  const RecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  let recognition = null;
+  let listening = false;
+  let heardText = '';
+
+  function setVoiceStatus(text) { if (voiceStatus) voiceStatus.textContent = text; }
+
+  function setListening(on) {
+    listening = on;
+    if (micButton) {
+      micButton.classList.toggle('listening', on);
+      micButton.textContent = on ? '⏹ توقف شنیدن' : '🎙 صحبت کن';
+      micButton.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+  }
+
+  function startListening() {
+    if (!RecognitionCtor || busy || listening) return;
+    heardText = '';
+    let failed = false;
+    recognition = new RecognitionCtor();
+    recognition.lang = 'fa-IR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => {
+      setListening(true);
+      setVoiceStatus('در حال شنیدن… بعد از کمی مکث، پیامت ارسال می‌شود.');
+    };
+    recognition.onresult = event => {
+      heardText = Array.from(event.results).map(r => r[0].transcript).join(' ').trim();
+      input.value = heardText;
+      updateCount();
+    };
+    recognition.onerror = event => {
+      if (event.error === 'aborted') return;
+      failed = true;
+      const messages = {
+        'no-speech': 'صدایی شنیده نشد.',
+        'audio-capture': 'میکروفون پیدا نشد.',
+        'not-allowed': 'اجازهٔ استفاده از میکروفون داده نشده است.',
+        'service-not-allowed': 'اجازهٔ تشخیص گفتار داده نشده است.',
+        network: 'خطای شبکه در تشخیص گفتار.'
+      };
+      setVoiceStatus(messages[event.error] || 'تشخیص گفتار ناموفق بود.');
+    };
+    recognition.onend = () => {
+      setListening(false);
+      const text = heardText.trim();
+      if (!text) {
+        if (!failed) setVoiceStatus('صدایی شنیده نشد؛ دوباره روی «صحبت کن» بزن.');
+        return;
+      }
+      setVoiceStatus('');
+      sendQuestion(text);
+    };
+    try {
+      recognition.start();
+    } catch (error) {
+      setListening(false);
+      setVoiceStatus('شروع شنیدن ممکن نشد؛ کمی بعد دوباره امتحان کن.');
+    }
+  }
+
+  if (micButton) {
+    if (!RecognitionCtor) {
+      micButton.disabled = true;
+      micButton.title = 'این مرورگر تشخیص گفتار ندارد';
+      setVoiceStatus('تشخیص گفتار در این مرورگر پشتیبانی نمی‌شود؛ Chrome یا Edge را امتحان کن.');
+    }
+    micButton.addEventListener('click', () => {
+      if (listening) { if (recognition) recognition.stop(); return; }
+      startListening();
+    });
+  }
+
   renderSavedHistory();
   updateCount();
   checkConfig();

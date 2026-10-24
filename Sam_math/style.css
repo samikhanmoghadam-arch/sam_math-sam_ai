@@ -45,3 +45,43 @@ body{position:relative;isolation:isolate;overflow-x:hidden}
 .light .scholar{background:linear-gradient(145deg,rgba(255,255,255,.86),rgba(237,242,255,.78));border-color:rgba(124,58,237,.22);box-shadow:0 12px 30px rgba(58,70,120,.10)}
 .light .scholar-name{color:#202849}.light .scholar-note{color:#5b6685}
 @media(max-width:520px){.scholar-newton .scholar-art,.scholar-einstein .scholar-art{width:70px;height:66px}}
+
+/* ===== ساخت آزمون ===== */
+.exam-setup{margin:14px 0}
+.exam-setup select{width:100%;border-radius:10px;padding:10px;background:#0a1020;border:1px solid #33415f;color:var(--text)}
+.exam-setup optgroup{color:var(--cyan);background:#0a1020}
+.exam-list{display:grid;gap:14px;margin-top:18px}
+.exam-q{padding:18px}
+.exam-text{color:var(--text)!important;font-size:1rem;line-height:1.9}
+.exam-options{display:grid;gap:8px}
+.exam-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#111b30;color:var(--text);cursor:pointer;line-height:1.7}
+.exam-option:hover{border-color:var(--accent)}
+.exam-option input{width:auto;accent-color:var(--accent);margin:0}
+.exam-option.correct-opt{border-color:var(--good);background:#06402f55}
+.exam-option.wrong-opt{border-color:#fb7185;background:#4c0d1f66}
+.exam-feedback{margin:10px 0 0;padding:10px 12px;border-radius:11px;white-space:pre-wrap;line-height:1.9;font-size:.9rem}
+.exam-feedback.good{background:#052e2b;color:#6ee7b7!important;border:1px solid #065f46}
+.exam-feedback.bad{background:#3b0d1c;color:#fda4af!important;border:1px solid #9f1239}
+.exam-feedback.skip{background:#1e2640;color:var(--muted)!important;border:1px solid var(--line)}
+.exam-score{font-size:1.1rem;font-weight:700;text-align:center;color:var(--good)!important}
+.exam-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.exam-actions .ghost-btn{padding:10px 15px;font-size:.9rem}
+
+/* ===== تاریخچهٔ ریاضیات ایران ===== */
+.timeline{list-style:none;margin:18px 0 0;padding:0;position:relative}
+.timeline::before{content:"";position:absolute;right:15px;top:8px;bottom:8px;width:2px;background:linear-gradient(#8b5cf6,#06b6d4);opacity:.55}
+.timeline-item{position:relative;margin:0;padding:0 46px 18px 0}
+.timeline-item::before{content:"";position:absolute;right:8px;top:22px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--cyan);box-shadow:0 0 12px #67e8f955}
+.timeline-item.tl-era{padding:10px 46px 8px 0}
+.timeline-item.tl-era::before{display:none}
+.tl-era span{display:inline-block;font-weight:800;color:#c4b5fd;letter-spacing:.02em;font-size:.95rem}
+.timeline-card{padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:#0b1224}
+.tl-year{display:inline-block;color:var(--cyan);font-size:.78rem;letter-spacing:.03em}
+.timeline-card h3{margin:6px 0 2px;font-size:1.12rem}
+.tl-role{color:#c4b5fd!important;font-size:.84rem;margin:0 0 8px!important}
+.timeline-card p{color:#cdd7f0;font-size:.92rem;line-height:1.9;margin:6px 0 0}
+.tl-fact{border-right:3px solid var(--good);padding-right:10px;color:#d1fae5!important}
+.light .timeline-card{background:#f7f9ff}
+.light .timeline-card p{color:#33415f}
+.light .tl-era span{color:#6d28d9}
+@media(max-width:520px){.timeline-item{padding-right:34px}.timeline-item.tl-era{padding-right:34px}.timeline-item::before{right:6px}.timeline::before{right:12px}.timeline-card{padding:13px}}
