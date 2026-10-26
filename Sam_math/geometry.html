@@ -27,7 +27,7 @@
 </div>
 
   <header class="topbar">
-    <a class="brand" href="index.html">SAM MATH <span>GEOMETRY</span></a>
+    <a class="brand" href="index.html"><img class="brand-logo" src="sam-math-logo-160.png" alt="SAM MATH"></a>
     <div class="top-actions">
       <button id="undoBtn">↶ بازگشت</button>
       <button id="clearBtn">پاک‌کردن بوم</button>
@@ -39,10 +39,15 @@
 
   <main class="workspace">
     <aside class="sidebar">
-      <h2>ابزارهای رسم</h2>
-      <p class="hint">ابزار را انتخاب کن و روی بوم کار کن.</p>
+      <div class="dim-switch" role="group" aria-label="حالت نمایش">
+        <button type="button" class="dim-btn active" data-dim="2d">دو‌بعدی</button>
+        <button type="button" class="dim-btn" data-dim="3d">سه‌بعدی</button>
+      </div>
 
-      <div class="tool-grid">
+      <h2 id="toolsTitle">ابزارهای رسم</h2>
+      <p class="hint dim2">ابزار را انتخاب کن و روی بوم کار کن.</p>
+
+      <div class="tool-grid dim2">
         <button class="tool active" data-tool="select">↖ <span>انتخاب و جابه‌جایی</span></button>
         <button class="tool" data-tool="point">• <span>نقطه</span></button>
         <button class="tool" data-tool="segment">／ <span>پاره‌خط</span></button>
@@ -59,19 +64,19 @@
         <button class="tool danger" id="clearAllBtn">🧹 <span>پاک‌کردن همه شکل‌ها</span></button>
       </div>
 
-      <label class="snap">
+      <label class="snap dim2">
         <input type="checkbox" id="snapToggle">
         <span>چسبیدن به نقاط شبکه (عددهای صحیح)</span>
       </label>
 
-      <h2>ساخت با اندازه</h2>
-      <form id="commandForm">
+      <h2 class="dim2">ساخت با اندازه</h2>
+      <form id="commandForm" class="dim2">
         <label for="commandInput">دستور یا شکل دلخواه</label>
         <input id="commandInput" placeholder="مثلاً segment 13">
         <button class="primary" type="submit">ساخت شکل</button>
       </form>
 
-      <div class="examples">
+      <div class="examples dim2">
         <button data-command="segment 13">پاره‌خط ۱۳ واحدی</button>
         <button data-command="circle 5">دایره با شعاع ۵</button>
         <button data-command="triangle">مثلث نمونه</button>
@@ -81,13 +86,43 @@
         <button data-command="pythagoras 3 4">قضیهٔ فیثاغورس</button>
       </div>
 
-      <div class="properties">
+      <div class="properties dim2">
         <h2>اطلاعات شکل</h2>
         <div id="propertiesText">هنوز شکلی انتخاب نشده است.</div>
       </div>
 
-      <div class="tool-help" id="helpText">
+      <div class="tool-help dim2" id="helpText">
         نقطه‌ای را انتخاب کن و آن را بکش تا جابه‌جا شود.
+      </div>
+      <div class="dim3-panel" id="dim3Panel">
+        <h2>ساخت شکل سه‌بعدی</h2>
+        <p class="hint">یک شکل را انتخاب کن تا در فضا ساخته شود. با کشیدن روی فضا آن را بچرخان و با چرخ موس بزرگ‌نمایی کن.</p>
+        <label class="size-field">اندازه (شعاع یا نصف ضلع، بین ۰٫۵ تا ۵)
+          <input id="size3d" type="number" min="0.5" max="5" step="0.5" value="2">
+        </label>
+        <div class="tool-grid dim3-grid">
+          <button class="tool" data-solid="circle">◯ <span>دایرهٔ سه‌بعدی (افقی)</span></button>
+          <button class="tool" data-solid="vcircle">◎ <span>دایرهٔ عمودی</span></button>
+          <button class="tool" data-solid="square">▢ <span>مربع سه‌بعدی (صفحه)</span></button>
+          <button class="tool" data-solid="sphere">● <span>کره</span></button>
+          <button class="tool" data-solid="hemisphere">◓ <span>نیم‌کره</span></button>
+          <button class="tool" data-solid="cube">■ <span>مکعب</span></button>
+          <button class="tool" data-solid="cuboid">▬ <span>مکعب‌مستطیل</span></button>
+          <button class="tool" data-solid="cylinder">▮ <span>استوانه</span></button>
+          <button class="tool" data-solid="cone">▲ <span>مخروط</span></button>
+          <button class="tool" data-solid="pyramid">◆ <span>هرم چهارگوش</span></button>
+          <button class="tool" data-solid="tetra">△ <span>هرم سه‌وجهی (چهاروجهی)</span></button>
+          <button class="tool" data-solid="prism">▱ <span>منشور مثلثی</span></button>
+          <button class="tool" data-solid="octa">◇ <span>هشت‌وجهی</span></button>
+        </div>
+        <h2>کنترل نما</h2>
+        <div class="dim3-actions">
+          <button type="button" id="auto3dBtn">↻ چرخش خودکار</button>
+          <button type="button" id="reset3dBtn">⟲ بازنشانی نما</button>
+          <button type="button" id="delete3dBtn" class="danger">🗑 حذف آخرین شکل</button>
+          <button type="button" id="clear3dBtn" class="danger">🧹 پاک‌کردن شکل‌های سه‌بعدی</button>
+        </div>
+        <div class="dim3-info" id="info3d">هنوز شکل سه‌بعدی‌ای ساخته نشده است.</div>
       </div>
       <div class="status" id="status" role="status">آمادهٔ رسم</div>
     </aside>
@@ -108,6 +143,7 @@
 
       <div class="canvas-shell" id="canvasShell">
         <canvas id="geometryCanvas"></canvas>
+        <canvas id="geometry3dCanvas" aria-label="فضای سه‌بعدی"></canvas>
       </div>
       <footer class="canvas-footer">
         <span id="coordinates">x: 0 · y: 0</span>
@@ -117,5 +153,6 @@
   </main>
 
   <script src="geometry.js"></script>
+  <script src="geometry3d.js"></script>
 </body>
 </html>

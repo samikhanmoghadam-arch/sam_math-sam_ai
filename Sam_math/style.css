@@ -85,3 +85,31 @@ body{position:relative;isolation:isolate;overflow-x:hidden}
 .light .timeline-card p{color:#33415f}
 .light .tl-era span{color:#6d28d9}
 @media(max-width:520px){.timeline-item{padding-right:34px}.timeline-item.tl-era{padding-right:34px}.timeline-item::before{right:6px}.timeline::before{right:12px}.timeline-card{padding:13px}}
+
+/* ---- لوگوی اپلیکیشن در سربرگ ---- */
+.brand-logo{height:50px;width:50px;display:block;border-radius:14px;object-fit:cover;box-shadow:0 6px 22px rgba(139,92,246,.35)}
+@media(max-width:520px){.brand-logo{height:42px;width:42px}}
+
+/* ---- کارت دانشمند و نمای بزرگ‌شده ---- */
+.timeline-card.tl-clickable{cursor:zoom-in;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.timeline-card.tl-clickable:hover,.timeline-card.tl-clickable:focus-visible{transform:translateX(-4px);border-color:#67e8f988;box-shadow:0 10px 30px #22d3ee1f;outline:none}
+.sci-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgba(5,8,18,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:background .28s ease,backdrop-filter .28s ease,-webkit-backdrop-filter .28s ease}
+.sci-overlay.show{background:rgba(5,8,18,.62);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.sci-modal{position:relative;width:min(75vw,980px);height:min(75vh,820px);overflow-y:auto;padding:14px 30px 28px;border:1px solid #67e8f955;border-radius:24px;background:linear-gradient(145deg,#141d35f7,#0c1326f9);box-shadow:0 30px 90px #0009,0 0 60px #8b5cf62a;opacity:0;transform:translateY(26px) scale(.8);transition:opacity .28s ease,transform .34s cubic-bezier(.2,.8,.2,1)}
+.sci-overlay.show .sci-modal{opacity:1;transform:none}
+.sci-close{position:absolute;top:14px;left:14px;display:block;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:#18233cdd;color:var(--muted);font-size:1rem;cursor:pointer;z-index:2}
+.sci-close:hover,.sci-close:focus-visible{color:var(--text);border-color:var(--cyan);outline:none}
+.sci-card{border:0;background:transparent;padding:44px 0 0}
+.sci-card h3{font-size:1.9rem;margin:8px 0 4px}
+.sci-card p{font-size:1.02rem}
+.sci-card .tl-year{font-size:.9rem}
+.sci-more{margin-top:10px;padding-top:14px;border-top:1px solid var(--line)}
+.sci-more h4{margin:22px 0 6px;color:var(--cyan);font-size:1.05rem}
+.sci-more p{color:#cdd7f0;line-height:2;font-size:1rem;margin:0}
+.sci-works{margin:0;padding-right:20px;color:#cdd7f0;line-height:1.9}
+.sci-works li{margin:4px 0}
+body.sci-open{overflow:hidden}
+.light .sci-modal{background:linear-gradient(145deg,#fffffff7,#eef2fbf9);color:#17213b;border-color:#7c3aed40}
+.light .sci-more p,.light .sci-works,.light .sci-card p{color:#33415f}
+.light .sci-overlay.show{background:rgba(226,232,248,.6)}
+@media(max-width:600px){.sci-modal{width:94vw;height:86vh;padding:10px 18px 22px}.sci-card h3{font-size:1.5rem}}
