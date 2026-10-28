@@ -45,3 +45,21 @@ body.sketch-page{overflow-x:hidden}
 .light .sk-result{background:#eef2fa;color:#17213b}
 @media(max-width:980px){.sk-layout{grid-template-columns:1fr}.sk-board{height:70vh}}
 @media(max-width:520px){.sk-layout{padding:14px 3% 30px}.sk-toolbar{gap:6px;padding:8px}.sk-board{height:62vh;border-radius:16px}.sk-width input{width:80px}}
+
+
+/* دکمهٔ بازگشت به خانه: یک کپسول تمیز بدون نماد */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(103, 232, 249, .45);
+  background: linear-gradient(120deg, rgba(139, 92, 246, .22), rgba(6, 182, 212, .18));
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.back-link:hover { border-color: var(--cyan); transform: translateY(-1px); }

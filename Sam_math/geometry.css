@@ -77,10 +77,20 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 }
 
 .back-link {
-  color: var(--cyan);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(103, 232, 249, .45);
+  background: linear-gradient(120deg, rgba(139, 92, 246, .22), rgba(6, 182, 212, .18));
+  color: var(--text);
   text-decoration: none;
-  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform .15s ease, border-color .15s ease;
 }
+.back-link:hover { border-color: var(--cyan); transform: translateY(-1px); }
 
 .workspace {
   display: grid;
@@ -560,3 +570,62 @@ body.day .scholar { background: rgba(255,255,255,.85); }
 .dim3-info { font-size: 12px; line-height: 1.9; }
 .dim3-panel .hint { margin-top: 10px; }
 .dim3-grid .tool { min-height: 38px; }
+
+/* دکمهٔ روز/شب: همان نماد ◐ و همان حال‌وهوای دکمه‌های صفحهٔ اصلی */
+#themeToggle.theme-icon {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 800;
+  color: #1a0b2e;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffd23f, #ff5fa2);
+  box-shadow: 0 4px 0 #7a2a57;
+  transition: transform .12s, box-shadow .12s;
+}
+#themeToggle.theme-icon:hover {
+  border: 0;
+  background: linear-gradient(135deg, #ffd23f, #ff5fa2);
+  transform: translateY(-2px);
+}
+#themeToggle.theme-icon:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a2a57; }
+
+/* حالت روز: دکمه‌ها و کادرهای تیره‌مانده روشن می‌شوند تا نوشته‌ها خوانا بمانند */
+body.day .back-link {
+  color: #0e7490;
+  border-color: #67b7c9;
+  background: linear-gradient(120deg, #efe7ff, #dff7fb);
+}
+body.day button {
+  background: #ffffff;
+  color: #15213a;
+  border-color: #b8c7da;
+}
+body.day button:hover { background: #e9f6fb; border-color: #0e7490; }
+body.day #themeToggle.theme-icon { color: #1a0b2e; border: 0; background: linear-gradient(135deg, #ffd23f, #ff5fa2); }
+body.day .primary { color: #082f49; background: #67e8f9; border-color: #67e8f9; }
+body.day .primary:hover { background: #a5f3fc; color: #082f49; }
+body.day .dim-switch { background: #e6eef8; border-color: #c9d6e6; }
+body.day .dim-btn { background: transparent; border-color: transparent; color: #4b5a74; }
+body.day .dim-btn:hover { color: #15213a; background: #e9f6fb; }
+body.day .dim-btn.active { background: linear-gradient(120deg, #8b5cf6, #0891b2); color: #fff; border-color: transparent; }
+body.day .tool.active { background: #e0f7fb; border-color: #0e7490; color: #0e7490; }
+body.day .tool.danger, body.day .dim3-actions button.danger { color: #be123c; border-color: #fda4af; }
+body.day .tool.danger:hover { background: #fff1f2; border-color: #be123c; }
+body.day .tool.special { color: #b45309; border-color: #fcd34d; }
+body.day .tool.special:hover { background: #fffbeb; border-color: #b45309; }
+body.day .examples button:hover, body.day .zoom-controls span { color: #0e7490; }
+body.day .snap { background: #f1f6fc; color: #4b5a74; border-color: #c9d6e6; }
+body.day .snap:has(input:checked) { color: #0e7490; border-color: #0e7490; }
+body.day #commandInput,
+body.day .size-field input { background: #ffffff; color: #15213a; border-color: #b8c7da; }
+body.day #propertiesText { color: #334155; }
+body.day .dim3-info { background: #f1f6fc; color: #15213a; border-color: #c9d6e6; }
+body.day .transform-box { border-color: #b8c7da; }
+body.day .canvas-shell { background: #f8fbff; }

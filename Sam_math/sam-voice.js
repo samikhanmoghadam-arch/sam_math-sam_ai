@@ -79,33 +79,62 @@
   const numbersIn = t => (t.match(/\d+(\.\d+)?/g) || []).map(Number);
 
   /* ---------- دستورهای محلی ---------- */
-  const NAV = [
-    ['سامایآی', 'sam-ai.html', 'سام ای آی'],
-    ['ماشینحساب', 'index.html?mode=calculator', 'ماشین‌حساب'],
-    ['ابزارریاضی', 'index.html?mode=tools', 'ابزارها'],
-    ['ابزارها', 'index.html?mode=tools', 'ابزارها'],
-    ['دستیاریاضی', 'index.html?mode=assistant', 'دستیار ریاضی'],
-    ['دستیار', 'index.html?mode=assistant', 'دستیار ریاضی'],
-    ['آزمون', 'index.html?mode=exam', 'ساخت آزمون'],
-    ['تاریخچه', 'index.html?mode=history', 'تاریخچهٔ ریاضیات'],
-    ['هندسه', 'geometry.html', 'هندسه'],
-    ['چکنویس', 'sketch.html', 'چک‌نویس'],
-    ['تخته', 'sketch.html', 'چک‌نویس'],
-    ['خانه', 'index.html', 'خانه']
+  // بخش‌ها: کلیدهای گفتاری (بدون فاصله) ← صفحه و حالت
+  const SECTIONS = [
+    { keys: ['ماشینحساب', 'ماشینحسابی'], mode: 'calculator', file: 'index.html', name: 'ماشین‌حساب' },
+    { keys: ['ابزارریاضی', 'ابزارها', 'ابزار'], mode: 'tools', file: 'index.html', name: 'ابزارهای ریاضی' },
+    { keys: ['دستیاریاضی', 'دستیارریاضی'], mode: 'assistant', file: 'index.html', name: 'دستیار ریاضی' },
+    { keys: ['آزمون', 'امتحان'], mode: 'exam', file: 'index.html', name: 'ساخت آزمون' },
+    { keys: ['تاریخچه'], mode: 'history', file: 'index.html', name: 'تاریخچهٔ ریاضیات' },
+    { keys: ['هندسه'], mode: '', file: 'geometry.html', name: 'هندسه' },
+    { keys: ['چکنویس', 'تخته'], mode: '', file: 'sketch.html', name: 'چک‌نویس' },
+    { keys: ['سامایآی', 'سامای', 'سامآی', 'samai'], mode: '', file: 'sam-ai.html', name: 'SAM AI' },
+    { keys: ['دستیار'], mode: 'assistant', file: 'index.html', name: 'دستیار ریاضی' }
   ];
+  const HOME_RE = /بیا بیرون|بیرون بیا|بیرون برو|برگرد خانه|برگرد به خانه|برو خانه|برو به خانه|بیا خانه|خانه برو|از بخش (?:بیرون|خارج)|خروج/;
+  const ENTER_RE = /(^| )(برو|بروم|بریم|بیا|بیار|وارد|بشو|شو|ببر|ببرم|باز|بازکن|نشان|نشان بده|ورود|داخل|برم)( |$)/;
+
+  // اگر دستور ورود به بخش یا بیرون آمدن بود، همان را انجام می‌دهد و متن پاسخ را برمی‌گرداند
+  function sectionAction(t) {
+    const here = location.pathname.split('/').pop() || 'index.html';
+    const onIndex = here === 'index.html';
+    const spaced = ' ' + t + ' ';
+    const words = t.split(' ').filter(Boolean).length;
+    const activeEl = document.querySelector('.nav-item.active[data-mode]');
+    const currentMode = activeEl ? activeEl.dataset.mode : '';
+
+    if (HOME_RE.test(t)) {
+      if (onIndex) {
+        const home = document.querySelector('.nav-item[data-mode="calculator"]');
+        if (home && currentMode !== 'calculator') home.click();
+        return { text: 'از بخش بیرون آمدم و به خانه (ماشین‌حساب) برگشتم.' };
+      }
+      return { text: 'به خانه برمی‌گردم.', go: 'index.html' };
+    }
+
+    const enter = ENTER_RE.test(spaced);
+    if (!enter && words > 2) return null;
+    const s = squash(t);
+    const sec = SECTIONS.find(x => x.keys.some(k => s.includes(k)));
+    if (!sec) return null;
+
+    if (onIndex && sec.mode) {
+      if (currentMode === sec.mode) return { text: `همین‌جا در بخش ${sec.name} هستی.` };
+      const btn = document.querySelector(`.nav-item[data-mode="${sec.mode}"]`);
+      if (btn) { btn.click(); return { text: `وارد بخش ${sec.name} شدم.` }; }
+    }
+    if (!sec.mode && here === sec.file) return { text: `همین‌جا در بخش ${sec.name} هستی.` };
+    return {
+      text: `وارد بخش ${sec.name} می‌شوم…`,
+      go: sec.mode ? `${sec.file}?mode=${sec.mode}` : sec.file
+    };
+  }
+
   const SOLIDS = [
     ['نیمکره', 'hemisphere'], ['مکعبمستطیل', 'cuboid'], ['مکعب', 'cube'], ['هشتوجهی', 'octa'],
     ['چهاروجهی', 'tetra'], ['هرمشش', 'hexpyramid'], ['هرم', 'pyramid'], ['استوانه', 'cylinder'],
     ['مخروطناقص', 'truncone'], ['مخروط', 'cone'], ['منشور', 'prism'], ['کره', 'sphere']
   ];
-
-  function matchNavigation(t) {
-    const s = squash(t);
-    const wantsGo = /برو|بازکن|نشانبده|بیابه/.test(s);
-    if (!wantsGo) return null;
-    for (const [key, url, name] of NAV) if (s.includes(key)) return { url, name };
-    return null;
-  }
 
   // «یک» عمداً تبدیل نمی‌شود چون حرف تعریف هم هست (یک دایره)
   // دستور هندسه به همان زبان دستور بوم هندسه تبدیل می‌شود (مثلاً "circle 5")
@@ -120,6 +149,8 @@
     }
     if (s.includes('مستطیل')) return n.length >= 2 ? `rectangle ${n[0]} ${n[1]}` : 'rectangle 8 5';
     if (s.includes('مثلث')) return 'triangle';
+    if (s.includes('مربع')) return 'rectangle 5 5';
+    if (s.includes('ششضلعی')) return 'regular 6 3';
     if (s.includes('دایره')) return `circle ${n[0] || 3}`;
     if (s.includes('پارهخط')) return `segment ${n[0] || 5}`;
     return null;
@@ -175,16 +206,136 @@
     hintTimer = setTimeout(() => { hintEl.hidden = true; }, 6000);
   }
 
+  /* ---------- دستورهای داخل هر بخش ----------
+     وقتی داخل ماشین‌حساب، ساخت آزمون یا چک‌نویس هستی، دستور صوتی همان‌جا عمل می‌کند
+     (بدون رفتن به بخش دیگر). اگر دستور مربوط به آن بخش نبود، null برمی‌گرداند. */
+  const $ = id => document.getElementById(id);
+  const visible = el => !!el && !el.hidden && el.offsetParent !== null;
+
+  function clickKey(key) {
+    const b = document.querySelector('#calcKeys button[data-key="' + key + '"]');
+    if (!b) return false;
+    b.click();
+    return true;
+  }
+
+  // کلمه‌های گفتاری ماشین‌حساب ← کلید متناظر آن
+  const CALC_WORDS = {
+    'توان': '^', 'ضربدر': '×', 'ضرب': '×', 'تقسیم': '÷', 'علاوه': '+', 'بعلاوه': '+', 'جمع': '+',
+    'منهای': '−', 'منفی': '−', 'تفریق': '−', 'درصد': '%', 'جذر': 'sqrt', 'پی': 'pi', 'نقطه': '.', 'ممیز': '.',
+    'ای': 'e', 'لگاریتم': 'log', 'سینوس': 'sin', 'کسینوس': 'cos', 'تانژانت': 'tan'
+  };
+  const CALC_SKIP = new Set(['به', 'بر', 'در', 'و', 'است', 'برابر', 'حساب', 'کن', 'محاسبه', 'بگو', 'چند', 'چقدر', 'چیست', 'هست', 'حاصل', 'مساوی', 'عدد', 'جواب']);
+
+  const CALC_FUNCS = ['sqrt', 'log', 'sin', 'cos', 'tan'];
+
+  function calcSpoken(t) {
+    const words = t.split(' ').filter(Boolean).map(w => (w === 'یک' ? '1' : w));
+    if (/^(پاک ?کن|خالی ?کن)$/.test(words.join(' '))) { clickKey('AC'); return 'ماشین‌حساب پاک شد.'; }
+    const seq = [];           // کلیدها به ترتیب تایپ
+    let pendingClose = false; // پرانتز تابع بعد از عدد بعدی بسته می‌شود
+    let numbers = 0;
+    for (const w of words) {
+      if (CALC_SKIP.has(w)) continue;
+      if (/^\d+(\.\d+)?$/.test(w)) {
+        numbers++;
+        seq.push(...w.split(''));
+        if (pendingClose) { seq.push(')'); pendingClose = false; }
+        continue;
+      }
+      const k = CALC_WORDS[w];
+      if (!k) return null; // کلمه‌ای که مربوط به ماشین‌حساب نیست؛ به بخش‌های دیگر یا هوش مصنوعی می‌رود
+      if (CALC_FUNCS.includes(k)) { seq.push(k + '('); pendingClose = true; }
+      else seq.push(k);
+    }
+    if (pendingClose) seq.push(')');
+    if (!numbers && !seq.includes('pi') && !seq.includes('e')) return null;
+    clickKey('AC');
+    seq.forEach(k => clickKey(k));
+    clickKey('=');
+    const result = ($('calcResult') || {}).textContent || '';
+    return result ? `نتیجه: ${result.replace(/^=\s*/, '')}` : 'محاسبه شد.';
+  }
+
+  const GRADE_NAMES = ['اول', 'دوم', 'سوم', 'چهارم', 'پنجم', 'ششم', 'هفتم', 'هشتم', 'نهم', 'دهم', 'یازدهم', 'دوازدهم'];
+  const EXAM_STOP = new Set(['بساز', 'بسازش', 'ساخت', 'درست', 'کن', 'آزمون', 'امتحان', 'سوال', 'سؤال', 'پایه', 'با', 'برای', 'و', 'موضوع', 'درباره', 'در', 'مورد', 'یک', 'بده', 'بیاور', 'شروع']);
+
+  function examSpoken(t) {
+    const s = ' ' + t + ' ';
+    const submit = /پایان|پاسخ ?نامه|تمامش کن|تمام کن/.test(s);
+    const reset = /آزمون تازه|آزمون جدید|از نو|ریست/.test(s);
+    const hasExam = /آزمون|امتحان/.test(s);
+    const create = /بساز|بسازش|ساخت|درست کن|شروع کن|بده|بیاور/.test(s);
+    if (reset) { if ($('examReset')) $('examReset').click(); return 'آزمون تازه آماده شد.'; }
+    if (submit) {
+      const b = $('examSubmit');
+      if (visible(b)) { b.click(); return 'پایان آزمون؛ پاسخ‌نامه نمایش داده شد.'; }
+      return 'هنوز آزمونی ساخته نشده که تمام شود.';
+    }
+    const countMatch = t.match(/(\d+) ?(?:سوال|سؤال)/);
+    let grade = '';
+    const digitGrade = t.match(/پایه (\d+)/);
+    if (digitGrade && +digitGrade[1] >= 1 && +digitGrade[1] <= 12) grade = GRADE_NAMES[+digitGrade[1] - 1];
+    if (!grade) grade = GRADE_NAMES.find(g => s.includes(' ' + g + ' ')) || '';
+    const topicMatch = t.match(/(?:موضوع|درباره|در مورد) (.+)$/);
+    const topic = topicMatch
+      ? topicMatch[1].split(' ').filter(w => w && !EXAM_STOP.has(w) && !GRADE_NAMES.includes(w) && !/^\d+$/.test(w)).join(' ').slice(0, 80)
+      : '';
+    const given = !!(countMatch || grade || topic);
+    if (!hasExam && !(create && given)) return null;
+
+    if (grade) {
+      const option = Array.from(document.querySelectorAll('#examGrade option')).find(o => o.textContent.trim() === grade);
+      if (option && $('examGrade')) $('examGrade').value = option.value;
+    }
+    if (countMatch) {
+      const n = Math.min(8, Math.max(3, parseInt(countMatch[1], 10)));
+      if ($('examCount')) $('examCount').value = String(n);
+    }
+    if (topicMatch && $('examTopic')) $('examTopic').value = topic;
+
+    if (create || (hasExam && !given)) {
+      if ($('examCreate') && !$('examCreate').disabled) {
+        $('examCreate').click();
+        return `در حال ساختن آزمون${grade ? ' پایهٔ ' + grade : ''}${countMatch ? ' با ' + countMatch[1] + ' سؤال' : ''}…`;
+      }
+      return 'آزمون در حال ساخته شدن است؛ کمی صبر کن.';
+    }
+    const parts = [grade && ('پایهٔ ' + grade), countMatch && (countMatch[1] + ' سؤال'), topic && ('موضوع: ' + topic)].filter(Boolean);
+    return `تنظیم شد (${parts.join('، ')}). بگو «آزمون بساز» تا ساخته شود.`;
+  }
+
+  function sketchSpoken(t) {
+    if (/^پاک ?کن|تخته را پاک|پاک کن/.test(t)) { if ($('skClear')) $('skClear').click(); return 'تخته پاک شد.'; }
+    if (/برگردان|بازگرد|برگرد/.test(t)) { if ($('skUndo')) $('skUndo').click(); return 'یک مرحله برگشت.'; }
+    return null;
+  }
+
+  function runSection(t) {
+    try {
+      if ($('calculatorPanel') && visible($('calculatorPanel'))) return calcSpoken(t);
+      if ($('examPanel') && visible($('examPanel'))) return examSpoken(t);
+      if ($('skCanvas')) return sketchSpoken(t);
+    } catch (_) {}
+    return null;
+  }
+
   /* ---------- پردازش یک جمله ---------- */
   async function handle(raw) {
     const heard = String(raw || '').trim();
     if (!heard) return;
     const t = norm(heard);
 
-    const nav = matchNavigation(t);
-    if (nav) {
-      showPanel(heard, `در حال رفتن به «${nav.name}»…`);
-      location.href = nav.url;
+    const action = sectionAction(t);
+    if (action) {
+      showPanel(heard, action.text);
+      if (action.go) setTimeout(() => { location.href = action.go; }, 600);
+      return;
+    }
+
+    const sectionReply = runSection(t);
+    if (sectionReply) {
+      showPanel(heard, sectionReply);
       return;
     }
 
@@ -194,7 +345,7 @@
       if (r.done) showPanel(heard, r.text);
       else {
         showPanel(heard, 'به صفحهٔ هندسه می‌روم تا این شکل ساخته شود…');
-        location.href = r.url;
+        setTimeout(() => { location.href = r.url; }, 700);
       }
       return;
     }

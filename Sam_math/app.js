@@ -4,11 +4,11 @@
  const exprOut=$('calcExpression'), resultOut=$('calcResult');
  function gcd(a,b){a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){[a,b]=[b,a%b]}return a||1}
  function fmt(n){if(!Number.isFinite(n))throw Error('این عبارت جواب معتبر ندارد.');if(Math.abs(n)<1e-12)n=0;return Number(n.toPrecision(12)).toString()}
- function calculate(raw){let s=raw.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/π/g,'pi').replace(/√\(/g,'sqrt(').replace(/\^/g,'**');
+ function calculate(raw){let s=raw.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/π/g,'pi').replace(/√\(/g,'sqrt(').replace(/\^/g,'**').replace(/%/g,'/100');
    if(!s.trim())throw Error('اول یک عبارت وارد کن.');
    if(!/^[0-9+\-*/().,\sA-Za-z_]*$/.test(s))throw Error('این علامت در ماشین‌حساب پشتیبانی نمی‌شود.');
-   s=s.replace(/\bpi\b/gi,'Math.PI').replace(/\bsqrt\s*\(/gi,'Math.sqrt(').replace(/\bsin\s*\(/gi,'Math.sin(').replace(/\bcos\s*\(/gi,'Math.cos(').replace(/\btan\s*\(/gi,'Math.tan(').replace(/\blog\s*\(/gi,'Math.log10(').replace(/\bln\s*\(/gi,'Math.log(').replace(/\babs\s*\(/gi,'Math.abs(');
-   if(/[A-Za-z_]/.test(s.replace(/Math\.(PI|sqrt|sin|cos|tan|log10|log|abs)/g,'')))throw Error('تابع یا نماد ناشناخته است.');
+   s=s.replace(/\bpi\b/gi,'Math.PI').replace(/\bsqrt\s*\(/gi,'Math.sqrt(').replace(/\bsin\s*\(/gi,'Math.sin(').replace(/\bcos\s*\(/gi,'Math.cos(').replace(/\btan\s*\(/gi,'Math.tan(').replace(/\blog\s*\(/gi,'Math.log10(').replace(/\bln\s*\(/gi,'Math.log(').replace(/\babs\s*\(/gi,'Math.abs(').replace(/\be\b/g,'Math.E');
+   if(/[A-Za-z_]/.test(s.replace(/Math\.(PI|E|sqrt|sin|cos|tan|log10|log|abs)/g,'')))throw Error('تابع یا نماد ناشناخته است.');
    const val=Function('"use strict"; return ('+s+')')(); return fmt(val);
  }
  function update(){exprOut.textContent=expression||'0';try{resultOut.textContent=expression?calculate(expression):'نتیجه';resultOut.classList.remove('error')}catch(e){resultOut.textContent=expression?'…':'نتیجه';resultOut.classList.remove('error')}}

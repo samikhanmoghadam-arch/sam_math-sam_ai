@@ -13,7 +13,7 @@
   const zoomLabel = $("zoomValue");
 
   // بوم محدود: روی هر محور از −LIMIT تا +LIMIT (واحد مختصات).
-  const LIMIT = 10;
+  const LIMIT = 20;
   const MIN_SCALE = 8;
   const MAX_SCALE = 150;
 
@@ -1182,12 +1182,35 @@
     }
   }
 
+  /* ---------- زوم دو انگشتی (لمسی) ---------- */
+  const pointers = new Map();
+  let pinch = null;
+  function startPinch() {
+    const [a, b] = [...pointers.values()];
+    pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, scale };
+    dragPoint = null; dragBefore = null; shapeDrag = null; panStart = null; strokeDraw = null;
+    say("زوم دو انگشتی: انگشت‌ها را از هم دور یا به هم نزدیک کن.");
+  }
+  function pinchUpdate() {
+    const [a, b] = [...pointers.values()];
+    const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    const before = screenToWorld(cx, cy);
+    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, pinch.scale * dist / pinch.dist));
+    ox = cx - before.x * scale;
+    oy = cy + before.y * scale;
+    clampView();
+    draw();
+  }
+
   /* ---------- pointer events ---------- */
 
   canvas.addEventListener("pointerdown", event => {
     const p = canvasPosition(event);
     const w = screenToWorld(p.x, p.y);
     canvas.setPointerCapture(event.pointerId);
+    pointers.set(event.pointerId, { x: p.x, y: p.y });
+    if (pointers.size >= 2) { startPinch(); return; }
 
     if (tool === "stroke") {
       strokeDraw = { pts: [clampWorld(w)] };
@@ -1237,6 +1260,8 @@
 
   canvas.addEventListener("pointermove", event => {
     const p = canvasPosition(event);
+    if (pointers.has(event.pointerId)) pointers.set(event.pointerId, { x: p.x, y: p.y });
+    if (pinch && pointers.size >= 2) { pinchUpdate(); return; }
     const w = screenToWorld(p.x, p.y);
     coords.textContent = `x: ${fmt(w.x)} · y: ${fmt(w.y)}`;
 
@@ -1296,8 +1321,16 @@
     dragBefore = null;
     panStart = null;
   }
-  canvas.addEventListener("pointerup", endPointer);
-  canvas.addEventListener("pointercancel", endPointer);
+  function releasePointer(event) {
+    pointers.delete(event.pointerId);
+    if (pinch) {
+      if (pointers.size < 2) { pinch = null; saveLocal(); }
+      return;
+    }
+    endPointer();
+  }
+  canvas.addEventListener("pointerup", releasePointer);
+  canvas.addEventListener("pointercancel", releasePointer);
 
   canvas.addEventListener("wheel", event => {
     event.preventDefault();
