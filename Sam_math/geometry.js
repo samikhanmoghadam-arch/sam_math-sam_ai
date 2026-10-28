@@ -32,7 +32,9 @@
     angle: "#fbbf24",
     perpbis: "#f0abfc",
     bisector: "#fb923c",
-    derived: "#f472b6"
+    derived: "#f472b6",
+    stroke: "#e879f9",
+    measure: "#fde047"
   };
 
   const toolNames = {
@@ -45,7 +47,11 @@
     angle: "اندازه‌گیری زاویه",
     midpoint: "نقطهٔ وسط",
     perp: "عمودمنصف",
-    bisector: "نیمساز زاویه"
+    bisector: "نیمساز زاویه",
+    stroke: "قلم آزاد",
+    measure: "اندازه‌گیری فاصله",
+    intersect: "تقاطع دو خط",
+    foot: "پای عمود"
   };
 
   const depNames = {
@@ -53,12 +59,29 @@
     centroid: "مرکز ثقل",
     circumcenter: "مرکز دایرهٔ محیطی",
     incenter: "مرکز دایرهٔ محاطی",
-    orthocenter: "مرکز ارتفاعی"
+    orthocenter: "مرکز ارتفاعی",
+    intersect: "نقطهٔ تقاطع",
+    foot: "پای عمود"
   };
 
   const fmt = n => Number.isFinite(n) ? String(+n.toFixed(3)) : "—";
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const getPoint = id => objects.find(o => o.id === id && o.type === "point");
+
+  // حالت روز/شب و رنگ متن روی بوم
+  const isDay = () => document.body.classList.contains("day");
+  const isIn3D = () => document.body.classList.contains("dim-3d");
+  function tint(hex) {
+    if (!isDay() || typeof hex !== "string" || hex[0] !== "#" || hex.length !== 7) return hex;
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.round(((n >> 16) & 255) * 0.5);
+    const g = Math.round(((n >> 8) & 255) * 0.5);
+    const b = Math.round((n & 255) * 0.5);
+    return `rgb(${r},${g},${b})`;
+  }
+  const pal = key => tint(palette[key]);
+  // بزرگ‌نمایی‌ای که بوم کامل را در کادر جا می‌دهد
+  const fitScale = () => Math.max(MIN_SCALE, Math.min(MAX_SCALE, Math.min(W, H) / (2 * LIMIT) * 0.96));
 
   // مختصات را داخل مرز بوم نگه می‌دارد
   const clampWorld = p => ({
@@ -80,6 +103,7 @@
   function say(text) {
     status.textContent = text;
   }
+  let shapeDrag = null, strokeDraw = null, hasSavedScale = false;
 
   /* ---------- history / persistence ---------- */
 
@@ -215,6 +239,25 @@
   function computeDep(p) {
     const P = p.dep.of.map(getPoint);
     if (P.some(q => !q)) return;
+    if (p.dep.kind === "intersect") {
+      const [p1, p2, p3, p4] = P;
+      const den = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x);
+      if (Math.abs(den) < 1e-9) return;
+      const t1 = p1.x * p2.y - p1.y * p2.x, t2 = p3.x * p4.y - p3.y * p4.x;
+      Object.assign(p, clampWorld({
+        x: (t1 * (p3.x - p4.x) - (p1.x - p2.x) * t2) / den,
+        y: (t1 * (p3.y - p4.y) - (p1.y - p2.y) * t2) / den
+      }));
+      return;
+    }
+    if (p.dep.kind === "foot") {
+      const [q, A, B] = P;
+      const dx = B.x - A.x, dy = B.y - A.y, len2 = dx * dx + dy * dy;
+      if (len2 < 1e-12) return;
+      const t = ((q.x - A.x) * dx + (q.y - A.y) * dy) / len2;
+      Object.assign(p, clampWorld({ x: A.x + t * dx, y: A.y + t * dy }));
+      return;
+    }
     const [a, b, c] = P;
     let r = null;
 
@@ -342,6 +385,21 @@
     for (let k = objects.length - 1; k >= 0; k--) {
       const o = objects[k];
 
+      if (o.type === "stroke") {
+        for (let i = 0; i < o.pts.length - 1; i++) {
+          const p = worldToScreen(o.pts[i]), q = worldToScreen(o.pts[i + 1]);
+          if (distToSegment(x, y, p.x, p.y, q.x, q.y) < tol) return o;
+        }
+        continue;
+      }
+      if (o.type === "measure") {
+        const a = getPoint(o.a), b = getPoint(o.b);
+        if (!a || !b) continue;
+        const p = worldToScreen(a), q = worldToScreen(b);
+        if (distToSegment(x, y, p.x, p.y, q.x, q.y) < tol) return o;
+        continue;
+      }
+
       if (o.type === "segment" || o.type === "line") {
         const a = getPoint(o.a), b = getPoint(o.b);
         if (!a || !b) continue;
@@ -403,6 +461,7 @@
     canvas.style.height = H + "px";
 
     if (!viewReady) {
+      if (!hasSavedScale) scale = fitScale();
       ox = W / 2;
       oy = H / 2;
       viewReady = true;
@@ -418,7 +477,7 @@
     const x0 = ox - L, x1 = ox + L, y0 = oy - L, y1 = oy + L;
 
     // بیرون بوم
-    ctx.fillStyle = "#06090f";
+    ctx.fillStyle = isDay() ? "#dfe8f3" : "#06090f";
     ctx.fillRect(0, 0, W, H);
 
     ctx.save();
@@ -427,14 +486,14 @@
     ctx.clip();
 
     // داخل بوم
-    ctx.fillStyle = "#0b1221";
+    ctx.fillStyle = isDay() ? "#f8fbff" : "#0b1221";
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
 
     const unit = scale >= 70 ? 1 : scale >= 30 ? 2 : 5;
     const spacing = unit * scale;
     const k = Math.floor(LIMIT / unit);
 
-    ctx.strokeStyle = "rgba(148,163,184,.14)";
+    ctx.strokeStyle = isDay() ? "rgba(71,85,105,.22)" : "rgba(148,163,184,.14)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = -k; i <= k; i++) {
@@ -447,7 +506,7 @@
     }
     ctx.stroke();
 
-    ctx.strokeStyle = "#9aabc4";
+    ctx.strokeStyle = tint("#9aabc4");
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(x0, oy);
@@ -466,7 +525,7 @@
     // برچسب محورها و عددها
     const cx = v => Math.min(Math.max(v, 4), W - 14);
     const cy = v => Math.min(Math.max(v, 14), H - 4);
-    ctx.fillStyle = "#9aabc4";
+    ctx.fillStyle = tint("#9aabc4");
     ctx.font = "12px system-ui";
     ctx.fillText("x", cx(x1 - 14), cy(oy - 8));
     ctx.fillText("y", cx(ox + 8), cy(y0 + 14));
@@ -485,17 +544,17 @@
     const s = worldToScreen(p);
     ctx.beginPath();
     ctx.arc(s.x, s.y, selectedId === p.id ? 6 : 4.5, 0, Math.PI * 2);
-    ctx.fillStyle = selectedId === p.id ? "#fff" : (p.dep ? palette.derived : palette.point);
+    ctx.fillStyle = selectedId === p.id ? "#fff" : (p.dep ? pal("derived") : pal("point"));
     ctx.fill();
-    ctx.strokeStyle = p.dep ? palette.derived : palette.point;
+    ctx.strokeStyle = p.dep ? pal("derived") : pal("point");
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.font = "bold 13px system-ui";
-    ctx.fillStyle = "#f1f5f9";
+    ctx.fillStyle = tint("#f1f5f9");
     ctx.fillText(p.label, s.x + 9, s.y - 8);
     ctx.font = "11px system-ui";
-    ctx.fillStyle = "#9aabc4";
+    ctx.fillStyle = tint("#9aabc4");
     ctx.fillText(`(${fmt(p.x)}, ${fmt(p.y)})`, s.x + 9, s.y + 9);
   }
 
@@ -508,7 +567,7 @@
     const length = Math.hypot(dx, dy);
     if (length < 0.001) return;
 
-    ctx.strokeStyle = palette[o.type];
+    ctx.strokeStyle = pal(o.type);
     ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
     ctx.beginPath();
 
@@ -523,7 +582,7 @@
     ctx.stroke();
 
     if (o.type === "segment") {
-      ctx.fillStyle = "#ddd6fe";
+      ctx.fillStyle = tint("#ddd6fe");
       ctx.font = "12px system-ui";
       ctx.fillText(`طول ${fmt(dist(a, b))}`,
         (p.x + q.x) / 2 + 6, (p.y + q.y) / 2 - 7);
@@ -536,7 +595,7 @@
     const reach = Math.hypot(W, H) * 2;
 
     ctx.save();
-    ctx.strokeStyle = palette.perpbis;
+    ctx.strokeStyle = pal("perpbis");
     ctx.lineWidth = selectedId === o.id ? 4 : 2.2;
     ctx.setLineDash([9, 6]);
     ctx.beginPath();
@@ -545,7 +604,7 @@
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = palette.perpbis;
+    ctx.fillStyle = pal("perpbis");
     ctx.font = "12px system-ui";
     ctx.fillText("عمودمنصف", s.m.x + 8, s.m.y - 8);
   }
@@ -556,7 +615,7 @@
     const reach = Math.hypot(W, H) * 2;
 
     ctx.save();
-    ctx.strokeStyle = palette.bisector;
+    ctx.strokeStyle = pal("bisector");
     ctx.lineWidth = selectedId === o.id ? 4 : 2.2;
     ctx.setLineDash([9, 6]);
     ctx.beginPath();
@@ -565,7 +624,7 @@
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = palette.bisector;
+    ctx.fillStyle = pal("bisector");
     ctx.font = "12px system-ui";
     ctx.fillText("نیمساز", s.q.x + s.dir.x * 70 + 6, s.q.y + s.dir.y * 70 - 6);
   }
@@ -578,11 +637,11 @@
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius * scale, 0, Math.PI * 2);
-    ctx.strokeStyle = palette.circle;
+    ctx.strokeStyle = pal("circle");
     ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
     ctx.stroke();
 
-    ctx.fillStyle = "#bae6fd";
+    ctx.fillStyle = tint("#bae6fd");
     ctx.font = "12px system-ui";
     ctx.fillText(`r = ${fmt(radius)}`, p.x + radius * scale * .55, p.y - 8);
   }
@@ -598,7 +657,7 @@
     ctx.closePath();
     ctx.fillStyle = "rgba(52,211,153,.12)";
     ctx.fill();
-    ctx.strokeStyle = palette.polygon;
+    ctx.strokeStyle = pal("polygon");
     ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
     ctx.stroke();
 
@@ -606,10 +665,45 @@
     const cx = ss.reduce((sum, p) => sum + p.x, 0) / ss.length;
     const cy = ss.reduce((sum, p) => sum + p.y, 0) / ss.length;
 
-    ctx.fillStyle = "#a7f3d0";
+    ctx.fillStyle = tint("#a7f3d0");
     ctx.font = "12px system-ui";
     ctx.fillText(`محیط ${fmt(perimeter)}`, cx + 5, cy);
     ctx.fillText(`مساحت ${fmt(area)}`, cx + 5, cy + 15);
+  }
+
+  function drawStroke(o) {
+    if (!o.pts || o.pts.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = pal("stroke");
+    ctx.lineWidth = selectedId === o.id ? 5 : 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    o.pts.forEach((q, i) => {
+      const s = worldToScreen(q);
+      if (i) ctx.lineTo(s.x, s.y); else ctx.moveTo(s.x, s.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawMeasure(o) {
+    const a = getPoint(o.a), b = getPoint(o.b);
+    if (!a || !b) return;
+    const p = worldToScreen(a), q = worldToScreen(b);
+    ctx.save();
+    ctx.strokeStyle = pal("measure");
+    ctx.lineWidth = selectedId === o.id ? 3 : 2;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(q.x, q.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = tint("#fde047");
+    ctx.font = "bold 12px system-ui";
+    ctx.fillText(`${fmt(dist(a, b))} واحد`, (p.x + q.x) / 2 + 8, (p.y + q.y) / 2 - 8);
+    ctx.restore();
   }
 
   function drawAngle(o) {
@@ -618,7 +712,7 @@
     if (!a || !v || !c || degrees === null) return;
 
     const p = worldToScreen(a), q = worldToScreen(v), r = worldToScreen(c);
-    ctx.strokeStyle = palette.angle;
+    ctx.strokeStyle = pal("angle");
     ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
@@ -651,7 +745,7 @@
     ctx.stroke();
 
     const mid = a1 + sweep / 2;
-    ctx.fillStyle = "#fde68a";
+    ctx.fillStyle = tint("#fde68a");
     ctx.font = "12px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -673,14 +767,18 @@
       if (o.type === "angle") drawAngle(o);
       if (o.type === "perpbis") drawPerpBisector(o);
       if (o.type === "bisector") drawBisector(o);
+      if (o.type === "stroke") drawStroke(o);
+      if (o.type === "measure") drawMeasure(o);
     }
     for (const p of objects.filter(o => o.type === "point")) drawPoint(p);
+
+    if (strokeDraw && strokeDraw.pts.length > 1) drawStroke({ id: -1, pts: strokeDraw.pts });
 
     if (polygonIds.length) {
       const ps = polygonIds.map(getPoint).filter(Boolean).map(worldToScreen);
       ctx.save();
       ctx.setLineDash([6, 5]);
-      ctx.strokeStyle = "#fbbf24";
+      ctx.strokeStyle = tint("#fbbf24");
       ctx.beginPath();
       ps.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
       ctx.stroke();
@@ -728,6 +826,13 @@
       props.textContent = a && v && c && full !== null
         ? `نیمساز زاویهٔ ${a.label}${v.label}${c.label} · هر نیمه ${fmt(full / 2)} درجه`
         : "نیمساز";
+    } else if (o.type === "stroke") {
+      props.textContent = `قلم آزاد · ${o.pts.length} نقطه`;
+    } else if (o.type === "measure") {
+      const a = getPoint(o.a), b = getPoint(o.b);
+      props.textContent = a && b
+        ? `فاصلهٔ ${a.label} تا ${b.label} · ${fmt(dist(a, b))} واحد`
+        : "اندازه‌گیری فاصله";
     } else if (o.type === "angle") {
       const degrees = angleDegrees(o);
       props.textContent = degrees === null
@@ -756,7 +861,11 @@
       angle: "سه نقطه را انتخاب کن: ضلع اول، رأس زاویه، ضلع دوم.",
       midpoint: "دو نقطه را انتخاب کن تا نقطهٔ وسطشان ساخته شود. با جابه‌جایی نقاط، وسط هم جابه‌جا می‌شود.",
       perp: "دو سر پاره‌خط را انتخاب کن تا عمودمنصفش رسم شود.",
-      bisector: "سه نقطه را انتخاب کن: ضلع اول، رأس زاویه، ضلع دوم تا نیمساز رسم شود."
+      bisector: "سه نقطه را انتخاب کن: ضلع اول، رأس زاویه، ضلع دوم تا نیمساز رسم شود.",
+      stroke: "با موس یا انگشت روی بوم بکش؛ با رها کردن، خط دست‌آزاد ثبت می‌شود.",
+      measure: "دو نقطه را انتخاب کن تا فاصلهٔ آن‌ها روی بوم نوشته شود.",
+      intersect: "دو نقطه برای خط اول و دو نقطه برای خط دوم انتخاب کن؛ محل تقاطع ساخته می‌شود.",
+      foot: "اول نقطهٔ P، سپس دو سر خط A و B را انتخاب کن تا پای عمود از P بر AB ساخته شود."
     };
 
     help.textContent = instructions[tool] || "";
@@ -768,6 +877,7 @@
     switch (o.type) {
       case "segment":
       case "line":
+      case "measure":
       case "perpbis": return o.a === id || o.b === id;
       case "circle": return o.center === id || o.through === id || (o.inradius ? o.inradius.includes(id) : false);
       case "point": return !!o.dep && o.dep.of.includes(id);
@@ -822,6 +932,52 @@
     } else {
       say("شکل حذف شد.");
     }
+  }
+
+  // Free points and freehand points of a shape: what moves when the shape is dragged or transformed.
+  function movableOf(o) {
+    let ids = [];
+    switch (o.type) {
+      case "segment": case "line": case "measure": case "perpbis": ids = [o.a, o.b]; break;
+      case "circle": ids = [o.center, o.through]; break;
+      case "angle": case "bisector": ids = [o.a, o.vertex, o.c]; break;
+      case "polygon": ids = o.points; break;
+    }
+    const points = [...new Set(ids)].map(getPoint).filter(p => p && !p.dep);
+    return { points, pts: o.type === "stroke" ? o.pts : [] };
+  }
+
+  // Applies fn to every movable point of the selected shape, around its centre. One undo step.
+  function transformSelected(fn, message) {
+    const o = objects.find(x => x.id === selectedId);
+    if (!o) {
+      say("اول یک شکل را انتخاب کن.");
+      return;
+    }
+    const m = movableOf(o);
+    const targets = [...m.points, ...m.pts];
+    if (!targets.length) {
+      say("این شکل قابل تبدیل نیست.");
+      return;
+    }
+    const cx = targets.reduce((sum, t) => sum + t.x, 0) / targets.length;
+    const cy = targets.reduce((sum, t) => sum + t.y, 0) / targets.length;
+    const next = targets.map(t => fn(t, cx, cy));
+    if (!next.every(inBoard)) {
+      say("این تبدیل شکل را از بوم بیرون می‌برد.");
+      return;
+    }
+    transact(() => targets.forEach((t, i) => { t.x = next[i].x; t.y = next[i].y; }));
+    say(message);
+  }
+
+  function rotateSelected(angle) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    const deg = Math.round(angle * 180 / Math.PI);
+    transformSelected((t, cx, cy) => {
+      const dx = t.x - cx, dy = t.y - cy;
+      return { x: cx + dx * c - dy * s, y: cy + dx * s + dy * c };
+    }, `شکل ${deg}° چرخید.`);
   }
 
   function addTriangleCenters() {
@@ -955,6 +1111,65 @@
       return;
     }
 
+    if (tool === "measure") {
+      pending.push(hit || createPoint(p));
+      if (pending.length === 2) {
+        const [a, b] = pending;
+        pending = [];
+        if (a.id === b.id) say("دو نقطهٔ متفاوت انتخاب کن.");
+        else {
+          addObject({ type: "measure", a: a.id, b: b.id });
+          say(`فاصلهٔ ${a.label} تا ${b.label} برابر ${fmt(dist(a, b))} واحد است.`);
+        }
+      } else {
+        say("حالا نقطهٔ دوم را انتخاب کن.");
+      }
+      return;
+    }
+
+    if (tool === "intersect") {
+      pending.push(hit || createPoint(p));
+      if (pending.length < 4) {
+        say(pending.length === 2 ? "حالا دو نقطهٔ خط دوم را انتخاب کن." : `نقطهٔ ${pending.length} از ۴ را انتخاب کن.`);
+        return;
+      }
+      const [a, b, c, d] = pending;
+      pending = [];
+      if (new Set([a.id, b.id, c.id, d.id]).size < 4) {
+        say("چهار نقطهٔ متفاوت انتخاب کن (دو نقطه برای هر خط).");
+        return;
+      }
+      const den = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
+      if (Math.abs(den) < 1e-9) {
+        say("این دو خط موازی‌اند و تقاطعی ندارند.");
+        return;
+      }
+      addObject({ type: "line", a: a.id, b: b.id });
+      addObject({ type: "line", a: c.id, b: d.id });
+      const X = addDerivedPoint("intersect", "X", [a.id, b.id, c.id, d.id]);
+      say(`نقطهٔ تقاطع ${X.label} ساخته شد.`);
+      return;
+    }
+
+    if (tool === "foot") {
+      pending.push(hit || createPoint(p));
+      if (pending.length < 3) {
+        say(pending.length === 1 ? "حالا یکی از دو سر خط (A) را انتخاب کن." : "حالا سر دوم خط (B) را انتخاب کن.");
+        return;
+      }
+      const [q, A, B] = pending;
+      pending = [];
+      if (A.id === B.id) {
+        say("دو سر خط باید متفاوت باشند.");
+        return;
+      }
+      const F = addDerivedPoint("foot", "H", [q.id, A.id, B.id]);
+      addObject({ type: "line", a: A.id, b: B.id });
+      addObject({ type: "segment", a: q.id, b: F.id });
+      say(`پای عمود ${F.label} ساخته شد.`);
+      return;
+    }
+
     if (tool === "angle") {
       pending.push(hit || createPoint(p));
       if (pending.length === 3) {
@@ -971,6 +1186,14 @@
 
   canvas.addEventListener("pointerdown", event => {
     const p = canvasPosition(event);
+    const w = screenToWorld(p.x, p.y);
+    canvas.setPointerCapture(event.pointerId);
+
+    if (tool === "stroke") {
+      strokeDraw = { pts: [clampWorld(w)] };
+      draw();
+      return;
+    }
 
     if (tool === "select") {
       const hit = hitPoint(p.x, p.y);
@@ -985,13 +1208,18 @@
         const shape = hitShape(p.x, p.y);
         if (shape) {
           selectedId = shape.id;
+          const m = movableOf(shape);
+          const targets = [...m.points, ...m.pts];
+          if (targets.length) {
+            shapeDrag = { targets, start: targets.map(t => ({ x: t.x, y: t.y })), origin: w };
+            dragBefore = JSON.stringify(objects);
+          }
         } else {
           selectedId = null;
           panStart = { x: p.x, y: p.y, ox, oy };
         }
       }
 
-      canvas.setPointerCapture(event.pointerId);
       updateProperties();
       draw();
       return;
@@ -999,7 +1227,7 @@
 
     // بیرون از کادر بوم چیزی ساخته نمی‌شود
     const hit = hitPoint(p.x, p.y);
-    if (!hit && !inBoard(screenToWorld(p.x, p.y))) {
+    if (!hit && !inBoard(w)) {
       say("این نقطه بیرون از بوم است؛ داخل کادر آبی کلیک کن.");
       return;
     }
@@ -1012,7 +1240,12 @@
     const w = screenToWorld(p.x, p.y);
     coords.textContent = `x: ${fmt(w.x)} · y: ${fmt(w.y)}`;
 
-    if (dragPoint) {
+    if (strokeDraw) {
+      const c = clampWorld(w);
+      const last = strokeDraw.pts[strokeDraw.pts.length - 1];
+      if (Math.hypot(c.x - last.x, c.y - last.y) > 0.03) strokeDraw.pts.push(c);
+      draw();
+    } else if (dragPoint) {
       const point = getPoint(dragPoint.id);
       if (point) {
         const target = snapPoint(w);
@@ -1021,6 +1254,19 @@
         draw();
         updateProperties();
       }
+    } else if (shapeDrag) {
+      // کل شکل با یک اندازهٔ ثابت جابه‌جا می‌شود و هیچ نقطه‌ای از بوم بیرون نمی‌رود
+      let dx = w.x - shapeDrag.origin.x, dy = w.y - shapeDrag.origin.y;
+      if ($("snapToggle")?.checked) { dx = Math.round(dx); dy = Math.round(dy); }
+      const xs = shapeDrag.start.map(q => q.x), ys = shapeDrag.start.map(q => q.y);
+      dx = Math.max(-LIMIT - Math.min(...xs), Math.min(LIMIT - Math.max(...xs), dx));
+      dy = Math.max(-LIMIT - Math.min(...ys), Math.min(LIMIT - Math.max(...ys), dy));
+      shapeDrag.targets.forEach((t, i) => {
+        t.x = shapeDrag.start[i].x + dx;
+        t.y = shapeDrag.start[i].y + dy;
+      });
+      draw();
+      updateProperties();
     } else if (panStart) {
       ox = panStart.ox + p.x - panStart.x;
       oy = panStart.oy + p.y - panStart.y;
@@ -1030,11 +1276,23 @@
   });
 
   function endPointer() {
-    if (dragPoint && dragBefore !== null && JSON.stringify(objects) !== dragBefore) {
+    if (strokeDraw) {
+      const pts = strokeDraw.pts;
+      strokeDraw = null;
+      if (pts.length > 1) {
+        transact(() => addObject({ type: "stroke", pts }));
+        say("قلم آزاد ثبت شد. برای جابه‌جایی‌اش ابزار انتخاب را بزن.");
+      } else {
+        draw();
+      }
+      return;
+    }
+    if ((dragPoint || shapeDrag) && dragBefore !== null && JSON.stringify(objects) !== dragBefore) {
       pushHistory(dragBefore);
     }
-    if (dragPoint || panStart) saveLocal();
+    if (dragPoint || shapeDrag || panStart) saveLocal();
     dragPoint = null;
+    shapeDrag = null;
     dragBefore = null;
     panStart = null;
   }
@@ -1061,6 +1319,18 @@
   $("finishPolygonBtn")?.addEventListener("click", finishPolygon);
   $("deleteBtn")?.addEventListener("click", deleteSelected);
   $("centersBtn")?.addEventListener("click", addTriangleCenters);
+  $("rotPlusBtn").addEventListener("click", () => rotateSelected(Math.PI / 12));
+  $("rotMinusBtn").addEventListener("click", () => rotateSelected(-Math.PI / 12));
+  $("mirrorBtn").addEventListener("click", () =>
+    transformSelected(t => ({ x: -t.x, y: t.y }), "شکل نسبت به محور y قرینه شد."));
+
+  $("themeToggle").addEventListener("click", () => {
+    document.body.classList.toggle("day");
+    try { localStorage.setItem("SAM MATH_GEOMETRY_THEME", isDay() ? "day" : "night"); } catch (_) {}
+    draw();
+    window.dispatchEvent(new Event("samgeo:theme"));
+    say(isDay() ? "حالت روز فعال شد." : "حالت شب فعال شد.");
+  });
 
   $("pngBtn")?.addEventListener("click", () => {
     canvas.toBlob(blob => {
@@ -1139,7 +1409,7 @@
   $("fitBtn").addEventListener("click", () => {
     ox = W / 2;
     oy = H / 2;
-    scale = 40;
+    scale = fitScale();
     clampView();
     draw();
     saveLocal();
@@ -1155,6 +1425,7 @@
     }
     if (event.key === "Escape") {
       pending = [];
+      strokeDraw = null;
       polygonIds = [];
       say("عملیات جاری لغو شد.");
       draw();
@@ -1163,11 +1434,33 @@
 
   /* ---------- command box ---------- */
 
+  // شکل‌های سه‌بعدی که با نام تنها هم ساخته می‌شوند (circle و cube… جدا از دستورهای دوبعدی هستند)
+  const SOLID_SHORTHAND = ["sphere", "hemisphere", "cube", "cuboid", "cylinder", "cone", "tcone",
+    "pyramid", "hexpyramid", "tetra", "prism", "octa", "vcircle", "square"];
+
   function command(text) {
     const parts = text.trim().toLowerCase().split(/[\s,;]+/);
     const name = parts[0];
     const n = Number(parts[1]);
     const m = Number(parts[2]);
+    const three = window.SAMGeometry3D;
+
+    if (name === "clear") {
+      if (isIn3D() && three) three.clear();
+      else clearAll();
+      return;
+    }
+    if (name === "solid" || SOLID_SHORTHAND.includes(name)) {
+      if (!three) {
+        say("بخش سه‌بعدی هنوز بارگذاری نشده است.");
+        return;
+      }
+      const kind = name === "solid" ? parts[1] : name;
+      const size = Number(name === "solid" ? parts[2] : parts[1]);
+      three.command(kind, size);
+      return;
+    }
+    if (isIn3D() && three) three.setDim("2d");
 
     // مرکز نمای فعلی، به‌شرطی که شکل داخل بوم جا شود
     const view = screenToWorld(W / 2, H / 2);
@@ -1256,6 +1549,20 @@
     }
   }
 
+  // واسط برای دستیار صوتی: یک دستور می‌گیرد و پیام وضعیت را برمی‌گرداند
+  window.SAMGeometry = {
+    run(text) {
+      const t = String(text || "").trim();
+      if (!t) return "دستوری داده نشد.";
+      if (t === "2d" || t === "3d") {
+        if (window.SAMGeometry3D) window.SAMGeometry3D.setDim(t);
+        return $("status").textContent;
+      }
+      command(t);
+      return $("status").textContent;
+    }
+  };
+
   $("commandForm").addEventListener("submit", event => {
     event.preventDefault();
     command($("commandInput").value);
@@ -1274,7 +1581,10 @@
       // نقطه‌های ذخیره‌شدهٔ قبلی را داخل بوم می‌آوریم
       objects.forEach(o => { if (o.type === "point") Object.assign(o, clampWorld(o)); });
       nextId = data.nextId || objects.reduce((max, o) => Math.max(max, o.id), 0) + 1;
-      if (Number.isFinite(data.scale)) scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, data.scale));
+      if (Number.isFinite(data.scale)) {
+        scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, data.scale));
+        hasSavedScale = true;
+      }
     }
   } catch (_) {}
 
@@ -1284,6 +1594,16 @@
     window.addEventListener("resize", resize);
   }
 
+  try {
+    if (localStorage.getItem("SAM MATH_GEOMETRY_THEME") === "day") document.body.classList.add("day");
+  } catch (_) {}
+
   setTool("select");
   resize();
+
+  // ?cmd=... اجرا می‌شود؛ بعد از بارگذاری بخش سه‌بعدی تا دستورهای solid کار کنند
+  window.addEventListener("load", () => {
+    const cmd = new URLSearchParams(location.search).get("cmd");
+    if (cmd) window.SAMGeometry.run(cmd);
+  });
 })();

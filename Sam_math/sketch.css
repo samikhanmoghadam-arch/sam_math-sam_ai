@@ -1,0 +1,47 @@
+/* چک‌نویس هوشمند — چیدمان مخصوص صفحهٔ sketch.html */
+body.sketch-page{overflow-x:hidden}
+.sk-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;max-width:1400px;margin:0 auto;padding:22px 4% 40px;position:relative;z-index:1}
+.sk-board-wrap{min-width:0;display:flex;flex-direction:column;gap:12px}
+.sk-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:18px;background:#10172bd9;backdrop-filter:blur(8px)}
+.sk-toolbar button{border:1px solid var(--line);background:#1b2743;color:var(--text);border-radius:11px;padding:8px 11px;font-size:.9rem;transition:transform .12s,border-color .12s}
+.sk-toolbar button:hover{transform:translateY(-1px);border-color:var(--accent)}
+.sk-toolbar button.active{background:linear-gradient(120deg,#8b5cf6,#0891b2);border-color:transparent;color:#fff}
+.sk-toolbar button.danger{color:#fda4af}
+.sk-sep{width:1px;height:28px;background:var(--line);margin:0 4px}
+.sk-colors{display:flex;gap:6px}
+.sk-color{width:26px!important;height:26px;padding:0!important;border-radius:50%!important;border:2px solid #fff3!important}
+.sk-color.active{outline:2px solid var(--cyan);outline-offset:2px}
+.sk-width{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.85rem}
+.sk-width input{width:110px;accent-color:var(--accent);padding:0}
+.sk-board{position:relative;width:100%;height:clamp(420px,72vh,820px);border-radius:22px;overflow:hidden;border:1px solid #67e8f955;background:#fdfdfb;box-shadow:0 22px 60px #0006,0 0 40px #8b5cf622}
+.sk-board canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+.sk-status-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between}
+.sk-mode{font-size:.85rem;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid var(--line)}
+.sk-mode.off{color:var(--muted);background:#1b2743}
+.sk-mode.on{color:#052e2b;background:var(--good);border-color:transparent}
+.sk-mode.busy{color:#1e1b4b;background:var(--cyan);border-color:transparent}
+.sk-status{margin:0;color:var(--muted);font-size:.9rem;line-height:1.7;flex:1;min-width:200px}
+.sk-status.error{color:#fda4af}
+.sk-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sk-card{border:1px solid var(--line);border-radius:20px;padding:18px;background:linear-gradient(145deg,#141d35,#0f162a);box-shadow:0 14px 40px #0002}
+.sk-card h2{font-size:1.1rem;margin:0 0 10px;color:var(--cyan)}
+.sk-switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:700;margin-bottom:8px}
+.sk-switch input{width:44px;height:24px;accent-color:var(--good);padding:0}
+.sk-hint{font-size:.84rem;color:var(--muted);line-height:1.9;margin:8px 0}
+.sk-label{display:block;color:var(--muted);font-size:.85rem;margin:12px 0 6px}
+.sk-templates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.sk-templates button{border:1px solid var(--line);background:#1b2743;color:var(--text);border-radius:10px;padding:8px 4px;font-size:.9rem}
+.sk-templates button:hover{border-color:var(--accent)}
+.sk-card input[type=text]{direction:ltr;text-align:left}
+.sk-card .primary-btn{margin-top:10px;width:100%}
+#skCheckAi:disabled{opacity:.45;cursor:not-allowed}
+.sk-result{margin-top:12px;padding:12px;border-radius:12px;background:#0b1224;border:1px solid var(--line);color:#dbeafe;line-height:1.9;font-size:.92rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.sk-result.error{border-color:#9f1239;color:#fda4af}
+.sk-result .sk-btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.sk-result button{border:1px solid var(--line);background:#1b2743;color:var(--text);border-radius:9px;padding:6px 10px;font-size:.85rem}
+.sk-result button:hover{border-color:var(--good)}
+.sk-result .sk-kv{color:var(--cyan)}
+.light .sk-card{background:#ffffffdd}
+.light .sk-result{background:#eef2fa;color:#17213b}
+@media(max-width:980px){.sk-layout{grid-template-columns:1fr}.sk-board{height:70vh}}
+@media(max-width:520px){.sk-layout{padding:14px 3% 30px}.sk-toolbar{gap:6px;padding:8px}.sk-board{height:62vh;border-radius:16px}.sk-width input{width:80px}}

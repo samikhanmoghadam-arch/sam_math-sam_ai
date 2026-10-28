@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d1d">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>SAM MATH | چک‌نویس هوشمند</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="sketch.css">
+  <script src="sketch.js" defer></script>
+</head>
+<body class="sketch-page">
+  <header class="topbar">
+    <a class="brand" href="index.html"><img class="brand-logo" src="sam-math-logo-160.png" alt="SAM MATH"></a>
+    <div class="top-actions">
+      <a class="back-link" href="index.html">بازگشت به خانه ↩</a>
+    </div>
+  </header>
+
+  <main class="sk-layout">
+    <section class="sk-board-wrap">
+      <div class="sk-toolbar" role="toolbar" aria-label="ابزارهای چک‌نویس">
+        <button type="button" class="sk-tool active" data-tool="pen" title="قلم">✎ قلم</button>
+        <button type="button" class="sk-tool" data-tool="eraser" title="پاک‌کن">⌫ پاک‌کن</button>
+        <span class="sk-sep"></span>
+        <div class="sk-colors" role="group" aria-label="رنگ قلم">
+          <button type="button" class="sk-color active" data-color="#1e293b" style="background:#1e293b" aria-label="مشکی"></button>
+          <button type="button" class="sk-color" data-color="#2563eb" style="background:#2563eb" aria-label="آبی"></button>
+          <button type="button" class="sk-color" data-color="#dc2626" style="background:#dc2626" aria-label="قرمز"></button>
+          <button type="button" class="sk-color" data-color="#16a34a" style="background:#16a34a" aria-label="سبز"></button>
+          <button type="button" class="sk-color" data-color="#9333ea" style="background:#9333ea" aria-label="بنفش"></button>
+          <button type="button" class="sk-color" data-color="#f59e0b" style="background:#f59e0b" aria-label="نارنجی"></button>
+        </div>
+        <label class="sk-width">ضخامت <input id="skWidth" type="range" min="1" max="24" value="4"></label>
+        <span class="sk-sep"></span>
+        <button type="button" id="skUndo" title="بازگشت">↶</button>
+        <button type="button" id="skRedo" title="جلو">↷</button>
+        <button type="button" id="skClear" class="danger" title="پاک‌کردن تخته">🧹 پاک‌کردن</button>
+        <button type="button" id="skSave" title="ذخیرهٔ تصویر">💾 ذخیره</button>
+      </div>
+
+      <div class="sk-board" id="skBoard">
+        <canvas id="skCanvas" aria-label="تخته‌سفید دست‌نویس"></canvas>
+      </div>
+
+      <div class="sk-status-row">
+        <span id="skMode" class="sk-mode off">● هوش مصنوعی خاموش (آفلاین)</span>
+        <p id="skStatus" class="sk-status" role="status">تخته آماده است. با قلم، ماوس یا انگشت بنویس.</p>
+      </div>
+    </section>
+
+    <aside class="sk-side">
+      <div class="sk-card">
+        <h2>هوش مصنوعی</h2>
+        <label class="sk-switch">
+          <input id="skAiToggle" type="checkbox">
+          <span>هوش مصنوعی روشن</span>
+        </label>
+        <p class="sk-hint" id="skAiHint">
+          خاموش: کاملاً آفلاین کار می‌کند؛ تخته و ابزار حل محلی در دسترس است.
+          روشن: نیاز به اینترنت دارد؛ دست‌نوشته را می‌خواند، ادامهٔ معادله را پیشنهاد می‌دهد و مراحل حل را می‌نویسد.
+        </p>
+        <button type="button" id="skCheckAi" class="primary-btn" disabled>بررسی با هوش مصنوعی</button>
+        <div id="skAiResult" class="sk-result" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="sk-card">
+        <h2>دستیار نوشتاری آفلاین</h2>
+        <p class="sk-hint">معادله یا عبارت را تایپ کن، یا از قالب‌های آماده استفاده کن. این بخش هم در حالت آفلاین کار می‌کند.</p>
+        <div class="sk-templates" aria-label="قالب‌های آماده">
+          <button type="button" data-insert="(a)/(b)">کسر</button>
+          <button type="button" data-insert="sqrt()">√</button>
+          <button type="button" data-insert="^2">x²</button>
+          <button type="button" data-insert="^">xⁿ</button>
+          <button type="button" data-insert="=">=</button>
+          <button type="button" data-insert="pi">π</button>
+          <button type="button" data-insert="sin()">sin</button>
+          <button type="button" data-insert="cos()">cos</button>
+          <button type="button" data-insert="+">+</button>
+          <button type="button" data-insert="-">−</button>
+          <button type="button" data-insert="*">×</button>
+          <button type="button" data-insert="/">÷</button>
+        </div>
+        <label for="skFormula" class="sk-label">عبارت یا معادله</label>
+        <input id="skFormula" type="text" dir="ltr" placeholder="مثلاً 2x+3=11 یا 2+2=" autocomplete="off">
+        <button type="button" id="skSolve" class="primary-btn">حل محلی</button>
+        <div id="skSolveOut" class="sk-result" aria-live="polite" hidden></div>
+        <p class="sk-hint">نکته: خواندن دست‌خط فقط با هوش مصنوعی ممکن است؛ در حالت آفلاین، عبارت را تایپ کن.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="sam-voice.js" defer></script>
+</body>
+</html>

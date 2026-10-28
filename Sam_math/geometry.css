@@ -460,3 +460,103 @@ body.dim-3d #geometryCanvas{display:none !important}
 body.dim-3d #geometry3dCanvas{display:block}
 body.dim-3d .dim2{display:none !important}
 body.dim-3d .dim3-panel{display:block}
+
+/* ===== v2: بوم بزرگ‌تر، حالت روز، کنترل‌های جدید ===== */
+.canvas-shell {
+  height: clamp(520px, 80vh, 960px);
+}
+#geometryCanvas,
+#geometry3dCanvas {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+@media (max-width: 900px) {
+  .canvas-shell { height: clamp(440px, 70vh, 760px); }
+}
+@media (max-width: 520px) {
+  .canvas-shell { height: 430px; }
+}
+
+/* حالت روز */
+body.day {
+  color-scheme: light;
+  --bg: #eef4fb;
+  --panel: #ffffff;
+  --panel2: #e6eef8;
+  --border: #c9d6e6;
+  --text: #15213a;
+  --muted: #4b5a74;
+  --cyan: #0e7490;
+  --purple: #6d28d9;
+  background: var(--bg);
+}
+body.day .topbar { background: #ffffffcc; }
+body.day .sidebar,
+body.day .canvas-heading,
+body.day .properties { background: #ffffff; }
+body.day .canvas-shell { background: #f8fbff; border-color: #b8c7da; box-shadow: 0 18px 55px rgba(60,80,120,.12); }
+body.day #commandInput { background: #ffffff; color: #15213a; }
+body.day .tool-help,
+body.day .status { background: #e6eef8; }
+body.day .dim3-info,
+body.day .range-field,
+body.day .check-line { color: #15213a; }
+body.day .math-universe { opacity: .45; }
+body.day .scholar { background: rgba(255,255,255,.85); }
+
+/* دکمهٔ حالت روز/شب کنار بقیه دکمه‌ها */
+#themeToggle {
+  background: linear-gradient(120deg, rgba(139,92,246,.22), rgba(6,182,212,.18));
+  border-color: rgba(103,232,249,.45);
+}
+
+/* ابزار تبدیل شکل */
+.transform-box {
+  margin: 14px 0 6px;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.transform-box .hint { margin: 0 0 8px; }
+.transform-row { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.transform-row button { font-size: 12px; text-align: right; }
+
+/* ===== سه‌بعدی: کنترل‌های شکل انتخاب‌شده ===== */
+.dim3-panel h2 { margin-top: 18px; }
+.dim3-panel .size-field,
+.range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 10px 0;
+}
+.range-field span { color: var(--cyan); font-weight: 800; }
+.range-field input[type="range"] { width: 100%; accent-color: #8b5cf6; padding: 0; }
+.check-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 8px 0;
+  cursor: pointer;
+}
+.check-line input { width: auto; accent-color: #22d3ee; }
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 4px; }
+.swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.25);
+}
+.swatch.on { border-color: #fff; box-shadow: 0 0 0 2px var(--cyan); }
+.dim3-actions button.danger { color: #fb7185; }
+.dim3-actions button { font-size: 12px; }
+.dim3-info { font-size: 12px; line-height: 1.9; }
+.dim3-panel .hint { margin-top: 10px; }
+.dim3-grid .tool { min-height: 38px; }

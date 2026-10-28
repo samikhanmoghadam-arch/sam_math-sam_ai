@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-title" content="SAM MATH">
-<meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-title" content="SAM MATH">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d19">
   <title>SAM MATH | Geometry Studio</title>
   <link rel="stylesheet" href="geometry.css">
 </head>
@@ -29,10 +30,11 @@
   <header class="topbar">
     <a class="brand" href="index.html"><img class="brand-logo" src="sam-math-logo-160.png" alt="SAM MATH"></a>
     <div class="top-actions">
-      <button id="undoBtn">↶ بازگشت</button>
-      <button id="clearBtn">پاک‌کردن بوم</button>
-      <button id="pngBtn">ذخیرهٔ تصویر</button>
-      <button id="saveBtn">ذخیرهٔ فایل</button>
+      <button id="themeToggle" type="button" title="تغییر حالت روز و شب">🌗 روز / شب</button>
+      <button id="undoBtn" type="button">↶ بازگشت</button>
+      <button id="clearBtn" type="button">پاک‌کردن بوم</button>
+      <button id="pngBtn" type="button">ذخیرهٔ تصویر</button>
+      <button id="saveBtn" type="button">ذخیرهٔ فایل</button>
       <a class="back-link" href="index.html">بازگشت به خانه ↩</a>
     </div>
   </header>
@@ -45,7 +47,7 @@
       </div>
 
       <h2 id="toolsTitle">ابزارهای رسم</h2>
-      <p class="hint dim2">ابزار را انتخاب کن و روی بوم کار کن.</p>
+      <p class="hint dim2">ابزار را انتخاب کن و روی بوم کار کن. با انتخاب ابزار «انتخاب»، می‌توانی هر شکل را با موس یا انگشت به‌تمامی جابه‌جا کنی.</p>
 
       <div class="tool-grid dim2">
         <button class="tool active" data-tool="select">↖ <span>انتخاب و جابه‌جایی</span></button>
@@ -54,14 +56,27 @@
         <button class="tool" data-tool="line">↔ <span>خط</span></button>
         <button class="tool" data-tool="circle">◯ <span>دایره</span></button>
         <button class="tool" data-tool="polygon">△ <span>چندضلعی</span></button>
+        <button class="tool" data-tool="stroke">✎ <span>قلم آزاد</span></button>
+        <button class="tool" data-tool="measure">↔ <span>اندازه‌گیری فاصله</span></button>
         <button class="tool" data-tool="angle">∠ <span>اندازه‌گیری زاویه</span></button>
         <button class="tool" data-tool="midpoint">⌖ <span>نقطهٔ وسط</span></button>
         <button class="tool" data-tool="perp">⟂ <span>عمودمنصف</span></button>
         <button class="tool" data-tool="bisector">⋖ <span>نیمساز زاویه</span></button>
+        <button class="tool" data-tool="intersect">✕ <span>تقاطع دو خط</span></button>
+        <button class="tool" data-tool="foot">⊥ <span>پای عمود از نقطه</span></button>
         <button class="tool" id="finishPolygonBtn">✓ <span>پایان چندضلعی</span></button>
         <button class="tool special" id="centersBtn">✦ <span>مراکز مثلث + خط اویلر</span></button>
         <button class="tool danger" id="deleteBtn">🗑 <span>حذف انتخاب‌شده</span></button>
         <button class="tool danger" id="clearAllBtn">🧹 <span>پاک‌کردن همه شکل‌ها</span></button>
+      </div>
+
+      <div class="transform-box dim2">
+        <p class="hint">تبدیل شکل انتخاب‌شده (حول مرکز آن):</p>
+        <div class="transform-row">
+          <button type="button" id="rotPlusBtn">↻ چرخش ۱۵°</button>
+          <button type="button" id="rotMinusBtn">↺ چرخش −۱۵°</button>
+          <button type="button" id="mirrorBtn">⇋ قرینه نسبت به محور y</button>
+        </div>
       </div>
 
       <label class="snap dim2">
@@ -69,10 +84,10 @@
         <span>چسبیدن به نقاط شبکه (عددهای صحیح)</span>
       </label>
 
-      <h2 class="dim2">ساخت با اندازه</h2>
-      <form id="commandForm" class="dim2">
+      <h2>ساخت با اندازه</h2>
+      <form id="commandForm">
         <label for="commandInput">دستور یا شکل دلخواه</label>
-        <input id="commandInput" placeholder="مثلاً segment 13">
+        <input id="commandInput" placeholder="مثلاً segment 13 یا solid sphere 2">
         <button class="primary" type="submit">ساخت شکل</button>
       </form>
 
@@ -84,6 +99,7 @@
         <button data-command="point 3 4">نقطهٔ (۳، ۴)</button>
         <button data-command="regular 6 3">شش‌ضلعی منتظم</button>
         <button data-command="pythagoras 3 4">قضیهٔ فیثاغورس</button>
+        <button data-command="clear">پاک‌کردن بوم</button>
       </div>
 
       <div class="properties dim2">
@@ -94,36 +110,66 @@
       <div class="tool-help dim2" id="helpText">
         نقطه‌ای را انتخاب کن و آن را بکش تا جابه‌جا شود.
       </div>
+
       <div class="dim3-panel" id="dim3Panel">
-        <h2>ساخت شکل سه‌بعدی</h2>
-        <p class="hint">یک شکل را انتخاب کن تا در فضا ساخته شود. با کشیدن روی فضا آن را بچرخان و با چرخ موس بزرگ‌نمایی کن.</p>
+        <h2>افزودن شکل سه‌بعدی</h2>
         <label class="size-field">اندازه (شعاع یا نصف ضلع، بین ۰٫۵ تا ۵)
           <input id="size3d" type="number" min="0.5" max="5" step="0.5" value="2">
         </label>
         <div class="tool-grid dim3-grid">
           <button class="tool" data-solid="circle">◯ <span>دایرهٔ سه‌بعدی (افقی)</span></button>
           <button class="tool" data-solid="vcircle">◎ <span>دایرهٔ عمودی</span></button>
-          <button class="tool" data-solid="square">▢ <span>مربع سه‌بعدی (صفحه)</span></button>
+          <button class="tool" data-solid="square">▢ <span>مربع (صفحه)</span></button>
           <button class="tool" data-solid="sphere">● <span>کره</span></button>
           <button class="tool" data-solid="hemisphere">◓ <span>نیم‌کره</span></button>
           <button class="tool" data-solid="cube">■ <span>مکعب</span></button>
           <button class="tool" data-solid="cuboid">▬ <span>مکعب‌مستطیل</span></button>
           <button class="tool" data-solid="cylinder">▮ <span>استوانه</span></button>
           <button class="tool" data-solid="cone">▲ <span>مخروط</span></button>
+          <button class="tool" data-solid="tcone">⏶ <span>مخروط ناقص</span></button>
           <button class="tool" data-solid="pyramid">◆ <span>هرم چهارگوش</span></button>
-          <button class="tool" data-solid="tetra">△ <span>هرم سه‌وجهی (چهاروجهی)</span></button>
+          <button class="tool" data-solid="hexpyramid">⬢ <span>هرم شش‌ضلعی</span></button>
+          <button class="tool" data-solid="tetra">△ <span>هرم سه‌وجهی</span></button>
           <button class="tool" data-solid="prism">▱ <span>منشور مثلثی</span></button>
           <button class="tool" data-solid="octa">◇ <span>هشت‌وجهی</span></button>
         </div>
-        <h2>کنترل نما</h2>
-        <div class="dim3-actions">
-          <button type="button" id="auto3dBtn">↻ چرخش خودکار</button>
-          <button type="button" id="reset3dBtn">⟲ بازنشانی نما</button>
-          <button type="button" id="delete3dBtn" class="danger">🗑 حذف آخرین شکل</button>
-          <button type="button" id="clear3dBtn" class="danger">🧹 پاک‌کردن شکل‌های سه‌بعدی</button>
-        </div>
+
+        <h2>شکل انتخاب‌شده</h2>
         <div class="dim3-info" id="info3d">هنوز شکل سه‌بعدی‌ای ساخته نشده است.</div>
+        <div class="swatches" id="swatches" aria-label="رنگ شکل"></div>
+        <label class="range-field">چرخش حول محور x <span id="rxVal">0°</span>
+          <input type="range" id="rxIn" min="-180" max="180" step="1" value="0">
+        </label>
+        <label class="range-field">چرخش حول محور y <span id="ryVal">0°</span>
+          <input type="range" id="ryIn" min="-180" max="180" step="1" value="0">
+        </label>
+        <label class="range-field">چرخش حول محور z <span id="rzVal">0°</span>
+          <input type="range" id="rzIn" min="-180" max="180" step="1" value="0">
+        </label>
+        <label class="check-line"><input type="checkbox" id="selfSpinToggle"> <span>چرخش خودکار شکل انتخاب‌شده</span></label>
+        <div class="dim3-actions">
+          <button type="button" id="scaleUpBtn">＋ بزرگ‌تر (×۱٫۲)</button>
+          <button type="button" id="scaleDownBtn">－ کوچک‌تر (÷۱٫۲)</button>
+          <button type="button" id="applySizeBtn">اعمال اندازهٔ بالا</button>
+          <button type="button" id="dupBtn">⧉ تکثیر شکل</button>
+          <button type="button" id="delete3dBtn" class="danger">🗑 حذف شکل انتخاب‌شده</button>
+          <button type="button" id="clear3dBtn" class="danger">🧹 پاک‌کردن همه</button>
+        </div>
+
+        <h2>نما و نمایش</h2>
+        <div class="dim3-actions">
+          <button type="button" id="viewFrontBtn">نمای روبه‌رو</button>
+          <button type="button" id="viewTopBtn">نمای بالا</button>
+          <button type="button" id="viewIsoBtn">نمای ایزومتریک</button>
+          <button type="button" id="reset3dBtn">⟲ بازنشانی نما</button>
+          <button type="button" id="auto3dBtn">↻ چرخش خودکار</button>
+          <button type="button" id="fitSceneBtn">⌖ مرکز صحنه</button>
+        </div>
+        <label class="check-line"><input type="checkbox" id="gridToggle" checked> <span>نمایش شبکه و محورها</span></label>
+        <label class="check-line"><input type="checkbox" id="fillToggle" checked> <span>پر کردن وجه‌ها</span></label>
+        <p class="hint">کشیدن روی فضای خالی: چرخش نما. کشیدن روی شکل: جابه‌جایی آن. کلیدهای ← → ↑ ↓ شکل را جابه‌جا می‌کنند؛ PageUp/PageDown بالا و پایین می‌برند؛ Delete حذفش می‌کند.</p>
       </div>
+
       <div class="status" id="status" role="status">آمادهٔ رسم</div>
     </aside>
 
@@ -134,10 +180,10 @@
           <p>صفحهٔ رسم محدود است: از −۱۰ تا ۱۰ روی هر محور؛ همه‌چیز داخل کادر آبی می‌ماند</p>
         </div>
         <div class="zoom-controls">
-          <button id="zoomOut">−</button>
+          <button id="zoomOut" type="button">−</button>
           <span id="zoomValue">100%</span>
-          <button id="zoomIn">+</button>
-          <button id="fitBtn">مرکزکردن</button>
+          <button id="zoomIn" type="button">+</button>
+          <button id="fitBtn" type="button">مرکزکردن</button>
         </div>
       </div>
 
@@ -154,5 +200,6 @@
 
   <script src="geometry.js"></script>
   <script src="geometry3d.js"></script>
+  <script src="sam-voice.js" defer></script>
 </body>
 </html>

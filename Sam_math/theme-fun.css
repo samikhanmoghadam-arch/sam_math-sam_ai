@@ -1,0 +1,251 @@
+/* ==========================================================================
+   SAM MATH · پوستهٔ شاد و بامزه (لایهٔ رویی روی style.css)
+   رنگ‌ها با متغیر تعریف شده‌اند تا حالت روشن و تاریک هماهنگ بمانند.
+   ========================================================================== */
+
+:root {
+  --fun-pink: #ff5fa2;
+  --fun-yellow: #ffd23f;
+  --fun-mint: #4ff5c1;
+  --fun-sky: #5ec8ff;
+  --fun-violet: #9d6bff;
+  --fun-shadow: 0 6px 0 rgba(10, 6, 40, .55);
+  --fun-radius: 22px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Vazirmatn", Tahoma, sans-serif;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(255, 95, 162, .18), transparent 28%),
+    radial-gradient(circle at 92% 14%, rgba(78, 245, 193, .14), transparent 26%),
+    radial-gradient(circle at 60% 110%, rgba(157, 107, 255, .22), transparent 40%),
+    #0d0a22;
+  background-attachment: fixed;
+}
+body.light {
+  background:
+    radial-gradient(circle at 10% 8%, rgba(255, 95, 162, .20), transparent 30%),
+    radial-gradient(circle at 92% 14%, rgba(78, 245, 193, .22), transparent 28%),
+    #fff8ef;
+}
+
+/* ---- سربرگ: لوگوی متحرک و دکمه‌های رنگی ---- */
+.topbar {
+  height: 80px;
+  border-bottom: 3px dashed rgba(255, 210, 63, .35);
+  background: rgba(13, 10, 34, .82);
+}
+body.light .topbar { background: rgba(255, 248, 239, .9); }
+.brand { font-size: 1.35rem; gap: 14px; }
+.brand-logo {
+  border-radius: 18px;
+  transition: transform .4s cubic-bezier(.3, 1.6, .5, 1);
+  border: 2px solid var(--fun-yellow);
+}
+.brand:hover .brand-logo { transform: rotate(-9deg) scale(1.12); }
+.icon-btn, #themeBtn {
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--fun-yellow), var(--fun-pink));
+  color: #1a0b2e;
+  border: 0;
+  font-weight: 800;
+  box-shadow: 0 4px 0 #7a2a57;
+  transition: transform .12s, box-shadow .12s;
+}
+.icon-btn:hover, #themeBtn:hover { transform: translateY(-2px); }
+.icon-btn:active, #themeBtn:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a2a57; }
+.status { font-weight: 700; }
+.status i { box-shadow: 0 0 0 4px rgba(79, 245, 193, .25); animation: fun-pulse 1.8s infinite; }
+
+/* ---- منو: برچسب‌های استیکری ---- */
+.sidebar {
+  border: 2px solid rgba(157, 107, 255, .45);
+  border-radius: 28px;
+  background: linear-gradient(170deg, rgba(37, 20, 74, .85), rgba(16, 12, 40, .92));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+}
+.section-label { color: var(--fun-yellow); font-weight: 800; letter-spacing: .04em; }
+.nav-item {
+  border-radius: 16px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  transition: transform .18s cubic-bezier(.3, 1.6, .5, 1), background .18s, border-color .18s;
+}
+.nav-item:hover { transform: translateX(-6px) rotate(-1deg); }
+.nav-item.active, .nav-item:hover {
+  background: linear-gradient(120deg, rgba(255, 95, 162, .24), rgba(94, 200, 255, .18));
+  border-color: var(--fun-pink);
+  color: #fff;
+}
+.sam-ai-nav { color: var(--fun-mint) !important; }
+.sidebar-note {
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 210, 63, .18), rgba(255, 95, 162, .14));
+  border: 2px dashed rgba(255, 210, 63, .45);
+}
+.sidebar-note span { display: inline-block; animation: fun-wiggle 3s ease-in-out infinite; }
+
+/* ---- عنوان صفحه ---- */
+.eyebrow { color: var(--fun-mint); font-weight: 800; }
+.page-heading h1 {
+  background: linear-gradient(90deg, var(--fun-yellow), var(--fun-pink), var(--fun-sky));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+  display: inline-block;
+}
+body.light .page-heading h1 { color: #5a1d86; background: none; -webkit-text-fill-color: #5a1d86; }
+
+/* ---- کارت‌ها و پنل‌ها: گرد و نرم ---- */
+.panel {
+  border-radius: var(--fun-radius);
+  border: 2px solid rgba(94, 200, 255, .22);
+  background: linear-gradient(160deg, rgba(38, 24, 78, .86), rgba(17, 13, 42, .92));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .3);
+}
+body.light .panel { background: #ffffffee; border-color: rgba(157, 107, 255, .22); }
+.tool-card {
+  border-radius: 20px;
+  border: 2px solid rgba(255, 210, 63, .18);
+  background: linear-gradient(170deg, rgba(27, 18, 58, .95), rgba(14, 10, 32, .95));
+  transition: transform .2s cubic-bezier(.3, 1.4, .5, 1), border-color .2s, box-shadow .2s;
+}
+.tool-card:hover { transform: translateY(-3px); border-color: var(--fun-yellow); box-shadow: 0 10px 26px rgba(255, 210, 63, .12); }
+.tool-card h3 { color: var(--fun-yellow); font-weight: 900; font-size: 1.12rem; }
+body.light .tool-card { background: #fffaf2; }
+body.light .tool-card h3 { color: #a2246a; }
+.flash { animation: fun-flash 1.6s ease; }
+@keyframes fun-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 210, 63, 0); }
+  25%, 60% { box-shadow: 0 0 0 6px rgba(255, 210, 63, .55); border-color: var(--fun-yellow); }
+}
+
+/* ---- دکمه‌های اصلی: برجسته با سایهٔ سه‌بعدی ---- */
+.primary-btn {
+  border-radius: 16px;
+  padding: 11px 18px;
+  background: linear-gradient(120deg, var(--fun-pink), var(--fun-violet) 55%, var(--fun-sky));
+  box-shadow: 0 5px 0 #3b1d6e;
+  transition: transform .12s, box-shadow .12s, filter .2s;
+  font-weight: 800;
+}
+.primary-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.primary-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #3b1d6e; }
+.ghost-btn {
+  border-radius: 14px;
+  border: 2px dashed var(--fun-sky);
+  background: transparent;
+  color: var(--fun-sky);
+  font-weight: 800;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+.ghost-btn:hover { background: rgba(94, 200, 255, .12); }
+
+/* ---- ماشین‌حساب: کلیدهای رنگی ---- */
+.calc-display {
+  border-radius: 24px;
+  border: 3px solid rgba(255, 210, 63, .35);
+  background: radial-gradient(circle at 80% 0%, rgba(94, 200, 255, .15), transparent 45%), #070518;
+}
+.calc-result { color: var(--fun-mint); font-weight: 800; }
+.key {
+  border-radius: 18px;
+  border: 0;
+  box-shadow: 0 5px 0 rgba(10, 6, 40, .6);
+  font-weight: 800;
+  transition: transform .1s, box-shadow .1s, filter .15s;
+}
+.key:hover { transform: translateY(-2px); filter: brightness(1.12); }
+.key:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(10, 6, 40, .6); }
+.key-special { background: linear-gradient(135deg, #ff7a9c, #ff4d6d); color: #fff; }
+.key-op { background: linear-gradient(135deg, #a58bff, #7c5cff); color: #fff; }
+.key-function { background: linear-gradient(135deg, #4ff5c1, #22c7a0); color: #053b2c; }
+.key-equals { background: linear-gradient(135deg, var(--fun-yellow), #ffa23f); color: #3b1d00; }
+body.light .key { color: #1a0b2e; }
+
+/* ---- ورودی‌ها ---- */
+input, select {
+  border-radius: 14px;
+  border: 2px solid rgba(94, 200, 255, .28);
+  background: rgba(8, 5, 26, .75);
+}
+input:focus, select:focus { box-shadow: 0 0 0 4px rgba(255, 95, 162, .25); border-color: var(--fun-pink); }
+body.light input, body.light select { background: #fff; }
+
+/* ---- نتیجه‌ها: مثل تابلوی کوچک ---- */
+.result {
+  border-radius: 16px;
+  border: 2px dashed rgba(79, 245, 193, .4);
+  background: rgba(79, 245, 193, .06);
+  color: #e9fff7 !important;
+}
+body.light .result { color: #1d3b33 !important; background: #ecfff8; }
+
+/* ---- دستیار ریاضی: جست‌وجو، فهرست موضوع‌ها ---- */
+.assistant-tools { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+.assistant-tools input { flex: 1 1 240px; }
+.topic-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 6px; }
+.topic-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 2px solid rgba(94, 200, 255, .3);
+  background: rgba(94, 200, 255, .08);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), border-color .15s;
+}
+.topic-chip small { font-weight: 600; color: var(--fun-mint); font-size: .72rem; }
+.topic-chip:hover { transform: translateY(-3px) rotate(-1deg); border-color: var(--fun-pink); }
+.topic-chip.active { background: linear-gradient(120deg, rgba(255, 95, 162, .3), rgba(255, 210, 63, .18)); border-color: var(--fun-yellow); }
+.tutor-answer h3 { color: var(--fun-yellow); margin: 0 0 8px; font-size: 1.2rem; }
+.tutor-answer p { margin: 8px 0; line-height: 2; white-space: normal; }
+.tutor-example {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 210, 63, .1);
+  border-right: 4px solid var(--fun-yellow);
+  color: #fff6cc !important;
+}
+body.light .tutor-example { color: #5a3b00 !important; }
+.tutor-try { margin-top: 6px; }
+
+/* ---- تاریخچه و آزمون ---- */
+.timeline-card { border-radius: 20px; border: 2px solid rgba(94, 200, 255, .2); }
+.timeline-card:hover { border-color: var(--fun-mint); }
+.timeline-item::before { border-color: var(--fun-pink); box-shadow: 0 0 14px rgba(255, 95, 162, .5); }
+.tl-era span { color: var(--fun-yellow); }
+.exam-option { border-radius: 14px; }
+
+/* ---- پاورقی و پیام‌ها ---- */
+footer { border-top: 3px dashed rgba(255, 210, 63, .25); color: var(--muted); }
+.message { color: var(--fun-mint); font-weight: 700; }
+
+/* ---- جلوه‌های حرکتی ---- */
+@keyframes fun-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+@keyframes fun-wiggle { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(8deg); } }
+.math-drift { filter: drop-shadow(0 0 10px rgba(255, 210, 63, .25)); }
+.scholar:hover .scholar-art { animation: fun-wiggle .6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .status i, .sidebar-note span, .scholar:hover .scholar-art, .flash { animation: none !important; }
+}
+
+/* ---- موبایل ---- */
+@media (max-width: 900px) {
+  .sidebar { border-radius: 22px; }
+  .nav-item { border-radius: 14px; }
+  .nav-item:hover { transform: none; }
+}
+@media (max-width: 520px) {
+  .topic-chip { flex: 1 1 calc(50% - 10px); }
+  .primary-btn { width: 100%; }
+  .assistant-tools input { flex-basis: 100%; }
+}
