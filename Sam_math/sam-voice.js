@@ -8,6 +8,7 @@
   window.__samVoiceLoaded = true;
 
   const KEY = 'sam-voice-on';
+  // ⚠️ همان آدرس Worker را که در sam-ai.js گذاشتی، اینجا هم داخل گیومه بگذار.
   const SAM_AI_URL = 'https://sam-ai-backend.sami-math-lab.workers.dev';
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -166,6 +167,7 @@
 
   /* ---------- هوش مصنوعی برای پرسش‌های آزاد ---------- */
   async function askAi(text) {
+    if (!/^https:\/\//.test(SAM_AI_URL)) return 'آدرس SAM AI هنوز در sam-voice.js تنظیم نشده است.';
     if (navigator.onLine === false) {
       return 'اینترنت وصل نیست؛ پاسخ هوش مصنوعی فقط با اینترنت ممکن است. دستورهای محلی مثل «برو به هندسه» آفلاین کار می‌کنند.';
     }
@@ -378,7 +380,9 @@
   function buildRecognizer() {
     rec = new SR();
     rec.lang = 'fa-IR';
-    rec.continuous = true;
+    // continuous=false: هر جمله بعد از کمی مکث همان لحظه نهایی و اجرا می‌شود.
+    // با continuous=true مرورگر نتیجهٔ نهایی را تا توقف دستی نگه می‌داشت و دستور دیر اجرا می‌شد.
+    rec.continuous = false;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     rec.onstart = () => { listening = true; backoff = 300; render(); };

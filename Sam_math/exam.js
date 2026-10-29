@@ -3,6 +3,7 @@
    اگر بخشی کم یا خراب باشد، فقط همان تعداد دوباره ساخته می‌شود تا آزمون کامل شود. */
 'use strict';
 (() => {
+  // ⚠️ همان آدرس Worker را که در sam-ai.js گذاشتی، اینجا هم داخل گیومه بگذار.
   const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const $ = id => document.getElementById(id);
   const gradeSelect = $('examGrade');

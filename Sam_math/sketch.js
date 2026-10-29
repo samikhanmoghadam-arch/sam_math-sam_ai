@@ -1,6 +1,7 @@
 /* چک‌نویس هوشمند: تخته‌سفید دست‌نویس + حل محلی (آفلاین) + بررسی هوشمند (آنلاین). */
 'use strict';
 (() => {
+  // ⚠️ همان آدرس Worker را که در sam-ai.js گذاشتی، اینجا هم داخل گیومه بگذار.
   const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const AI_KEY = 'sam-sketch-ai';
   const BOARD_KEY = 'sam-sketch-board-v1';
@@ -326,6 +327,7 @@
     if (aiBusy) return;
     if (!items.length) return setStatus('تخته خالی است؛ اول چیزی بنویس.', true);
     if (navigator.onLine === false) return setStatus('اینترنت وصل نیست؛ هوش مصنوعی در دسترس نیست.', true);
+    if (!/^https:\/\//.test(SAM_AI_URL)) return setStatus('آدرس SAM AI هنوز تنظیم نشده است.', true);
     aiBusy = true;
     dirty = false;
     checkBtn.disabled = true;

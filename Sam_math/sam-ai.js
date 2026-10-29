@@ -1,6 +1,8 @@
 /* SAM AI: persistent same-browser chat history and student-first tutoring. */
 'use strict';
 (() => {
+  // ⚠️ بعد از deploy، آدرس https://....workers.dev خودت را داخل گیومه بگذار.
+  // همین آدرس را در sam-voice.js هم بگذار.
   const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const STORAGE_KEY = 'sam_ai_conversation_v1';
   const $ = (id) => document.getElementById(id);
@@ -30,6 +32,7 @@
   const connectionText = $('connectionText');
   const count = $('charCount');
   const webToggle = $('webSearchToggle');
+  const imageButton = $('imageButton');
   const siteInput = $('siteInput');
   const attachmentInput = $('attachmentInput');
   const attachButton = $('attachButton');
@@ -191,9 +194,10 @@
     });
   }
 
-  async function sendQuestion(question) {
+  async function sendQuestion(question, mode = 'chat') {
     const clean = String(question || '').trim();
-    const attachment = selectedAttachment;
+    const makeImage = mode === 'image';
+    const attachment = makeImage ? null : selectedAttachment; // تصویر ساخت از متن است، نه بررسی فایل
     if ((!clean && !attachment) || busy) {
       if (!clean && !attachment) setStatus('اول یک پیام بنویس یا عکس/فایلی انتخاب کن.', true);
       return;
@@ -223,6 +227,7 @@
       setStatus('متن سؤال و فایل خیلی طولانی است؛ فایل کوچک‌تر یا متن کوتاه‌تری انتخاب کن.', true);
       return;
     }
+    if (makeImage) displayText = `🖼 ${clean}`;
     addMessage('user', displayText);
     input.value = '';
     updateCount();
@@ -231,7 +236,9 @@
     sendButton.disabled = true;
     input.disabled = true;
     if (attachButton) attachButton.disabled = true;
-    setStatus('در حال ارتباط با SAM AI…');
+    setStatus(makeImage ? 'در حال ساخت تصویر… ممکن است چند ثانیه طول بکشد.'
+      : (webToggle && webToggle.checked) ? 'در حال جست‌وجو در وب و ساخت پاسخ…'
+      : 'در حال ارتباط با SAM AI…');
 
     const outgoing = [...history, { role: 'user', content: prompt.slice(0, 20000) }].slice(-MAX_HISTORY_MESSAGES);
     const controller = new AbortController();
@@ -244,6 +251,7 @@
           messages: outgoing,
           attachment: imageData ? { name: attachment.file.name, type: attachment.file.type || 'image/jpeg', data: imageData } : null,
           web: Boolean(webToggle && webToggle.checked),
+          image: makeImage,
           site: siteInput ? siteInput.value.trim() : ''
         }),
         signal: controller.signal
@@ -260,6 +268,14 @@
       pending.p.textContent = answer;
       pending.p.classList.remove('thinking');
       renderSources(pending.article, data.sources);
+      if (typeof data.image === 'string' && data.image.startsWith('data:image/')) {
+        // تصویر فقط در همین صفحه نمایش داده می‌شود و در تاریخچه ذخیره نمی‌شود (حجم localStorage محدود است)
+        const img = document.createElement('img');
+        img.src = data.image;
+        img.alt = 'تصویری که SAM AI ساخت';
+        img.style.cssText = 'display:block;max-width:100%;border-radius:12px;margin-top:10px';
+        pending.article.querySelector('.bubble').appendChild(img);
+      }
       history = [...outgoing, { role: 'assistant', content: answer }].slice(-MAX_HISTORY_MESSAGES);
       const saved = saveHistory();
       resetAttachment();
@@ -292,6 +308,7 @@
     sendQuestion(input.value);
   });
   input.addEventListener('input', updateCount);
+  if (imageButton) imageButton.addEventListener('click', () => sendQuestion(input.value, 'image'));
   input.addEventListener('keydown', event => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
