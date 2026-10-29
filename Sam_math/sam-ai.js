@@ -3,7 +3,7 @@
 (() => {
   // ⚠️ بعد از deploy، آدرس https://....workers.dev خودت را داخل گیومه بگذار.
   // همین آدرس را در sam-voice.js هم بگذار.
-  const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
+const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const STORAGE_KEY = 'sam_ai_conversation_v1';
   const $ = (id) => document.getElementById(id);
   // Appearance only: independent light/dark preference for the SAM AI page.
