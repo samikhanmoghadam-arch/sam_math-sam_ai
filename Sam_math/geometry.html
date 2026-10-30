@@ -47,7 +47,7 @@
       </div>
 
       <h2 id="toolsTitle">ابزارهای رسم</h2>
-      <p class="hint dim2">ابزار را انتخاب کن و روی بوم کار کن. با انتخاب ابزار «انتخاب»، می‌توانی هر شکل را با موس یا انگشت به‌تمامی جابه‌جا کنی.</p>
+      <p class="hint dim2">ابزارهای هندسهٔ پویا: نقطه، خط، دایره، چندضلعی، ساخت‌های کلاسیک، اندازه‌گیری، تبدیل‌ها و مدل‌های سه‌بعدی. ابزار را انتخاب کن و روی بوم کار کن. با انتخاب ابزار «انتخاب»، می‌توانی هر شکل را با موس یا انگشت به‌تمامی جابه‌جا کنی.</p>
 
       <div class="tool-grid dim2">
         <button class="tool active" data-tool="select">↖ <span>انتخاب و جابه‌جایی</span></button>
@@ -114,7 +114,7 @@
       <div class="dim3-panel" id="dim3Panel">
         <h2>افزودن شکل سه‌بعدی</h2>
         <label class="size-field">اندازه (شعاع یا نصف ضلع، بین ۰٫۵ تا ۵)
-          <input id="size3d" type="number" min="0.5" max="5" step="0.5" value="2">
+          <input id="size3d" type="text" inputmode="decimal" autocomplete="off" min="0.5" max="5" step="0.5" value="2">
         </label>
         <div class="tool-grid dim3-grid">
           <button class="tool" data-solid="circle">◯ <span>دایرهٔ سه‌بعدی (افقی)</span></button>
@@ -198,6 +198,7 @@
     </section>
   </main>
 
+  <script src="digit-normalizer.js" defer></script>
   <script src="geometry.js"></script>
   <script src="geometry3d.js"></script>
   <script src="sam-voice.js" defer></script>

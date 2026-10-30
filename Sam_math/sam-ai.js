@@ -3,7 +3,7 @@
 (() => {
   // ⚠️ بعد از deploy، آدرس https://....workers.dev خودت را داخل گیومه بگذار.
   // همین آدرس را در sam-voice.js هم بگذار.
-const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
+  const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const STORAGE_KEY = 'sam_ai_conversation_v1';
   const $ = (id) => document.getElementById(id);
   // Appearance only: independent light/dark preference for the SAM AI page.
@@ -33,7 +33,6 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const count = $('charCount');
   const webToggle = $('webSearchToggle');
   const imageButton = $('imageButton');
-  const siteInput = $('siteInput');
   const attachmentInput = $('attachmentInput');
   const attachButton = $('attachButton');
   const attachmentPreview = $('attachmentPreview');
@@ -197,7 +196,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   async function sendQuestion(question, mode = 'chat') {
     const clean = String(question || '').trim();
     const makeImage = mode === 'image';
-    const attachment = makeImage ? null : selectedAttachment; // تصویر ساخت از متن است، نه بررسی فایل
+    const attachment = selectedAttachment; // در حالت ساخت تصویر نیز عکس انتخاب‌شده برای ویرایش فرستاده می‌شود
     if ((!clean && !attachment) || busy) {
       if (!clean && !attachment) setStatus('اول یک پیام بنویس یا عکس/فایلی انتخاب کن.', true);
       return;
@@ -215,7 +214,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
       if (attachment.kind === 'image') {
         try { imageData = await readFileAsDataURL(attachment.file); }
         catch (error) { setStatus(error.message || 'خواندن عکس ناموفق بود.', true); return; }
-        prompt = clean || 'لطفاً این تصویر را بررسی و توضیح بده.';
+        prompt = makeImage ? (clean || 'Improve this image while preserving the original subject and composition.') : (clean || 'لطفاً این تصویر را بررسی و توضیح بده.');
         displayText = `${clean ? clean + '\\n' : ''}📎 عکس: ${attachment.file.name}`;
       } else {
         prompt = `${clean ? clean + '\\n\\n' : 'لطفاً فایل زیر را بررسی کن.\\n\\n'}[محتوای فایل: ${attachment.file.name}]\\n${attachment.text}`;
@@ -227,7 +226,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
       setStatus('متن سؤال و فایل خیلی طولانی است؛ فایل کوچک‌تر یا متن کوتاه‌تری انتخاب کن.', true);
       return;
     }
-    if (makeImage) displayText = `🖼 ${clean}`;
+    if (makeImage) displayText = `🖼 ${clean || 'ویرایش تصویر پیوست‌شده'}${attachment && attachment.kind === 'image' ? '\\n📎 عکس برای ویرایش: ' + attachment.file.name : ''}`;
     addMessage('user', displayText);
     input.value = '';
     updateCount();
@@ -236,7 +235,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
     sendButton.disabled = true;
     input.disabled = true;
     if (attachButton) attachButton.disabled = true;
-    setStatus(makeImage ? 'در حال ساخت تصویر… ممکن است چند ثانیه طول بکشد.'
+    setStatus(makeImage ? (attachment && attachment.kind === 'image' ? 'در حال ویرایش عکس آپلودشده…' : 'در حال ساخت تصویر… ممکن است چند ثانیه طول بکشد.')
       : (webToggle && webToggle.checked) ? 'در حال جست‌وجو در وب و ساخت پاسخ…'
       : 'در حال ارتباط با SAM AI…');
 
@@ -251,8 +250,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
           messages: outgoing,
           attachment: imageData ? { name: attachment.file.name, type: attachment.file.type || 'image/jpeg', data: imageData } : null,
           web: Boolean(webToggle && webToggle.checked),
-          image: makeImage,
-          site: siteInput ? siteInput.value.trim() : ''
+          image: makeImage
         }),
         signal: controller.signal
       });
@@ -272,7 +270,7 @@ const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
         // تصویر فقط در همین صفحه نمایش داده می‌شود و در تاریخچه ذخیره نمی‌شود (حجم localStorage محدود است)
         const img = document.createElement('img');
         img.src = data.image;
-        img.alt = 'تصویری که SAM AI ساخت';
+        img.alt = 'تصویر ساخته‌شده یا ویرایش‌شده توسط SAM AI';
         img.style.cssText = 'display:block;max-width:100%;border-radius:12px;margin-top:10px';
         pending.article.querySelector('.bubble').appendChild(img);
       }

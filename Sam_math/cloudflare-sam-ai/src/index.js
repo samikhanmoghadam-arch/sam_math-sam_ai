@@ -5,6 +5,7 @@
 
 const CHAT_MODEL = "@cf/google/gemma-4-26b-a4b-it";
 const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell";
+const IMAGE_EDIT_MODEL = "@cf/black-forest-labs/flux-1-kontext-dev";
 const VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"; // برای خواندن عکس (مثلاً دست‌نوشته)
 
 const VISION_PROMPT = "تو تصویر را بررسی می‌کنی و فقط یک شیء JSON معتبر برمی‌گردانی؛ هیچ متن اضافه‌ای ننویس. اگر کاربر ساختار JSON خواست، همان کلیدها را پر کن.";
@@ -29,7 +30,7 @@ const SYSTEM_PROMPT = `تو «SAM AI» هستی؛ یک دستیار هوشمند
 
 قواعد:
 - زبان پیش‌فرض فارسی روان و طبیعی است. اگر کاربر به زبان دیگری نوشت، به همان زبان پاسخ بده.
-- اگر مطمئن نیستی، صادقانه بگو. هرگز منبع، عدد یا واقعیت ساختگی نساز.
+- اگر مطمئن نیستی، صادقانه بگو. هرگز منبع، عدد یا واقعیت ساختگی نساز. سؤال را دقیق بخوان، محدودیت‌های کاربر را رعایت کن، اگر درخواست مبهم است یک سؤال کوتاه بپرس، و در کدنویسی راهکار قابل اجرا با حفظ کدهای موجود ارائه بده.
 - از تاریخچهٔ گفت‌وگو برای فهمیدن سؤال‌های پیگیری استفاده کن.
 - اگر در پیام‌ها «نتایج جست‌وجوی زندهٔ وب» آمده، از همان‌ها استفاده کن و به منبع‌ها با شمارهٔ [1] و [2] ارجاع بده. اگر نتایج برای جواب کافی نبود، همین را صریح بگو.
 - اطلاعات خصوصی یا رمز عبور کاربر را تشویق به ارسال نکن.
@@ -147,6 +148,36 @@ async function makeImage(env, request) {
   });
 }
 
+
+async function editImage(env, request, imageData) {
+  const prefix = /^data:image\/[a-zA-Z0-9.+-]+;base64,/;
+  if (!prefix.test(imageData)) {
+    return reply({ error: "فرمت عکس برای ویرایش معتبر نیست؛ لطفاً JPG، PNG یا WEBP بفرست." }, 400);
+  }
+  const base64 = imageData.replace(prefix, "");
+  // Kontext مدل ویرایش تصویر است؛ عکس اصلی به‌عنوان ورودی به مدل داده می‌شود.
+  try {
+    const out = await env.AI.run(IMAGE_EDIT_MODEL, {
+      prompt: String(request || "Improve the image while preserving the original subject and composition.").slice(0, 1800),
+      image: base64,
+      steps: 20
+    });
+    const result = typeof out?.image === "string" ? out.image
+      : (typeof out?.output === "string" ? out.output : "");
+    if (!result) throw new Error("مدل ویرایش تصویر خروجی تصویری برنگرداند.");
+    return reply({
+      answer: "ویرایش تصویر انجام شد. اگر نتیجه دقیقاً مطابق خواسته‌ات نیست، تغییرات را واضح‌تر بنویس.",
+      image: `data:image/png;base64,${result}`
+    });
+  } catch (error) {
+    const detail = String(error?.message || error).slice(0, 220);
+    console.error("Image editing failed:", detail);
+    return reply({
+      error: "ویرایش مستقیم تصویر در حال حاضر روی این Worker در دسترس نیست یا مدل ویرایش خطا داد. مدل FLUX Kontext باید در حساب Workers AI قابل استفاده باشد. جزئیات: " + detail
+    }, 502);
+  }
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
@@ -169,7 +200,14 @@ export default {
       }
       const question = messages[messages.length - 1].content;
 
-      if (body.image === true) return await makeImage(env, question);
+      if (body.image === true) {
+        const imageAttachment = body.attachment;
+        if (imageAttachment && typeof imageAttachment.data === "string" &&
+            imageAttachment.data.startsWith("data:image/") && imageAttachment.data.length < 7_000_000) {
+          return await editImage(env, question, imageAttachment.data);
+        }
+        return await makeImage(env, question);
+      }
 
       // اگر عکسی پیوست شده، با مدل بینایی بررسی می‌شود (گفت‌وگوی متنی عادی فقط متن می‌بیند)
       const att = body.attachment;
@@ -196,7 +234,7 @@ export default {
       let extra = "";
       let sources = [];
       if (body.web === true) {
-        const found = await webSearch(env, question, cleanSite(body.site));
+        const found = await webSearch(env, question, "");
         if (found.error) return reply({ error: found.error }, found.status);
         extra = searchContext(found.results);
         sources = found.results.map(({ title, url }) => ({ title, url }));

@@ -629,3 +629,37 @@ body.day #propertiesText { color: #334155; }
 body.day .dim3-info { background: #f1f6fc; color: #15213a; border-color: #c9d6e6; }
 body.day .transform-box { border-color: #b8c7da; }
 body.day .canvas-shell { background: #f8fbff; }
+
+
+/* SAM MATH visual polish: more ambient motion without changing existing layout */
+body { position:relative; isolation:isolate; }
+body::before, body::after {
+  content:""; position:fixed; inset:-18%; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(103,232,249,.11) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 74% 38%, rgba(167,139,250,.15) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 44% 78%, rgba(52,211,153,.10) 0 1.5px, transparent 2px),
+    radial-gradient(ellipse at 70% 15%, rgba(99,102,241,.12), transparent 38%);
+  background-size: 190px 180px, 260px 230px, 230px 210px, 100% 100%;
+  animation: samAmbientDrift 34s linear infinite;
+}
+body::after { opacity:.55; transform:scale(1.15); animation-duration:48s; animation-direction:reverse; }
+@keyframes samAmbientDrift { from { translate:0 0; } to { translate:4% -3%; } }
+button, .tool-card, .panel, .nav-btn { transition:transform .2s ease, box-shadow .25s ease, border-color .2s ease; }
+button:hover { transform:translateY(-1px); }
+.tool-card:hover { box-shadow:0 12px 35px rgba(103,232,249,.07); }
+input:focus, textarea:focus, select:focus { outline:2px solid rgba(103,232,249,.58); outline-offset:2px; }
+.tool-card.advanced { padding:0; overflow:hidden; }
+.tool-card.advanced details { padding:1rem; }
+.tool-card.advanced summary {
+  cursor:pointer; list-style:none; font-weight:800; padding:.25rem 0;
+  display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+}
+.tool-card.advanced summary::-webkit-details-marker { display:none; }
+.tool-card.advanced summary::after { content:"＋"; color:var(--cyan); font-size:1.2rem; }
+.tool-card.advanced details[open] summary::after { content:"−"; }
+.tool-card.advanced details > p:first-of-type { margin-top:1rem; }
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation:none; }
+  *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; }
+}
