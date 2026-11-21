@@ -70,7 +70,7 @@
  };
 
  /* ---------- دستیار ریاضی: موضوع‌ها ---------- */
- const TOOL_BUTTON={linear:'solveLinear',fraction:'solveFraction',square:'squareFraction',sieve:'runSieve',percent:'solvePercent',gcd:'solveGcd',ratio:'solveRatio',egy:'solveEgyptian',fib:'runFibonacci',factor:'factorNumber',seq:'runSequence',quad:'solveQuad',divisors:'runDivisors',phi:'runPhi',mod:'runMod'};
+ const TOOL_BUTTON={linear:'solveLinear',fraction:'solveFraction',square:'squareFraction',sieve:'runSieve',percent:'solvePercent',gcd:'solveGcd',ratio:'solveRatio',egy:'solveEgyptian',fib:'runFibonacci',factor:'factorNumber',seq:'runSequence',quad:'solveQuad',divisors:'runDivisors',phi:'runPhi',mod:'runMod',sundaram:'runSundaram'};
  const TOPICS=[
   {id:'fractions',cat:'عدد',title:'کسرها',text:'برای جمع و تفریق کسرها، مخرج مشترک بگیر؛ سپس صورت‌ها را جمع یا کم کن و در پایان با تقسیم صورت و مخرج بر ب.م.م ساده کن.',example:'۱/۲ + ۱/۳ = ۳/۶ + ۲/۶ = ۵/۶',tool:'fraction'},
   {id:'divisors',cat:'عدد',title:'شمارنده‌ها (مقسوم‌علیه‌ها)',text:'شمارنده‌های یک عدد، عددهایی هستند که آن عدد را بدون باقی‌مانده بر آن‌ها بخش‌پذیر است. برای پیدا کردن آن‌ها، از ۱ تا ریشهٔ عدد را امتحان کن و هر شمارندهٔ کوچک را همراه با «عدد ÷ آن» ثبت کن؛ هر جفت ضربی دو شمارندهٔ عدد است.',example:'۱۲ = ۱×۱۲ = ۲×۶ = ۳×۴ ⇒ شمارنده‌ها: ۱، ۲، ۳، ۴، ۶، ۱۲ (۶ تا)',tool:'divisors'},
@@ -79,6 +79,7 @@
   {id:'gcd',cat:'عدد',title:'ب.م.م و ک.م.م',text:'ب.م.م بزرگ‌ترین عددی است که هر دو عدد بر آن بخش‌پذیرند. ک.م.م کوچک‌ترین مضرب مثبت مشترک آن‌هاست. برای هر دو عدد: ب.م.م × ک.م.م = حاصل‌ضرب خود آن دو عدد.',example:'ب.م.م(۱۸، ۲۴) = ۶ و ک.م.م = ۷۲',tool:'gcd'},
   {id:'egy',cat:'عدد',title:'کسرهای مصری',text:'هر کسر کوچک‌تر از ۱ را می‌توان به مجموع کسرهایی با صورت ۱ نوشت. روش حریصانه: مخرج ۱ بر کسر را گرد به بالا بگیر، آن را کم کن و تکرار کن.',example:'۳/۷ = ۱/۳ + ۱/۱۱ + ۱/۲۳۱',tool:'egy'},
   {id:'fib',cat:'الگو',title:'دنبالهٔ فیبوناچی',text:'در دنبالهٔ فیبوناچی هر جمله از جمع دو جملهٔ قبل به دست می‌آید. جملهٔ اول و دوم هر دو ۱ هستند.',example:'۱، ۱، ۲، ۳، ۵، ۸، ۱۳، ۲۱، ...',tool:'fib'},
+  {id:'sundaram',cat:'عدد',title:'غربال ساندرام',text:'در جدول ساندرام عددهای k = i + j + 2ij را خط می‌زنیم (۱ ≤ i ≤ j). هر عددی که خط نخورد، k است و عدد اول فرد 2k + 1 از آن به دست می‌آید. چون i + j + 2ij = ((2i+1)(2j+1) − 1) ÷ 2، خط خوردن k یعنی 2k + 1 به شکل (2i+1)(2j+1) تجزیه می‌شود و مرکب است.',example:'k = ۱ + ۲ + ۲×۱×۲ = ۷ ⇒ 2×۷+1 = ۱۵ = ۳×۵ پس ۷ خط می‌خورد. k = ۳ باقی می‌ماند ⇒ 2×۳+1 = ۷ اول است.',tool:'sundaram'},
   {id:'golden',cat:'الگو',title:'نسبت طلایی',text:'اگر هر جملهٔ فیبوناچی را بر جملهٔ قبلی‌اش تقسیم کنیم، نسبت‌ها کم‌کم به عدد ۱٫۶۱۸ نزدیک می‌شوند. این عدد را نسبت طلایی می‌نامند و با φ (فی) نشان می‌دهند: φ = (۱ + √۵) ÷ ۲. هرچه جمله‌ها بزرگ‌تر شوند، نزدیکی بیشتر می‌شود.',example:'۱۳÷۸ = ۱٫۶۲۵ ؛ ۲۱÷۱۳ ≈ ۱٫۶۱۵۴ — دومی به φ نزدیک‌تر است.',tool:'phi'},
   {id:'modular',cat:'عدد',title:'حساب پیمانه‌ای و ساعت',text:'در حساب پیمانه‌ای، پس از رسیدن به یک مقدار مشخص (پیمانه) دوباره از ابتدا می‌شماریم؛ درست مثل ساعت ۱۲ ساعته. باقی‌مانده تقسیم عدد بر پیمانه، همان جای ما روی ساعت است.',example:'روی ساعت ۱۲ تایی: ۸ + ۹ = ۱۷ ⇒ ۱۷ mod ۱۲ = ۵ ⇒ ساعت ۵',tool:'mod'},
   {id:'powers',cat:'عدد',title:'توان و جذر',text:'توان یعنی ضرب تکراری: ۳² = ۳×۳ = ۹. جذرِ یک عدد نامنفی، عددی است که مربعش آن عدد شود. ۲⁰ = ۱ و ۲⁻¹ = ۱/۲.',example:'√۴۹ = ۷ ؛ ۲⁵ = ۳۲',tool:'square'},
@@ -113,6 +114,7 @@
    const t=TOPICS.find(x=>x.id===id);
    if(!t)return;
    activeTopic=id;
+   const sc=$('sunCheck'); if(sc) sc.hidden = id!=='sundaram';
    topicAnswer.replaceChildren();
    topicAnswer.classList.remove('error');
    const h=document.createElement('h3');h.textContent=t.title;
@@ -145,7 +147,7 @@
  topicSearch.addEventListener('input',renderTopics);
  $('randomTopic').addEventListener('click',()=>showTopic(TOPICS[Math.floor(Math.random()*TOPICS.length)].id));
  /* ---------- حالت‌ها (تب‌ها) ---------- */
- const modeInfo={calculator:['ماشین‌حساب علمی','با دکمه‌ها حساب کن؛ نیازی به تایپ با کیبورد نیست.'],tools:['ابزارهای ریاضی','ابزارهای کاربردی از کسرها تا شمارنده‌ها و نسبت طلایی.'],assistant:['دستیار ریاضی SAM','توضیح‌های آموزشی کوتاه با نمونه؛ هر موضوع را در ابزار هم امتحان کن.'],exam:['ساخت آزمون','آزمون چهارگزینه‌ای برای هر پایه بساز و پاسخ‌نامه را ببین.'],history:['تاریخچهٔ ریاضیات ایران','از خوارزمی و خیام تا میرزاخانی؛ دانشمندانی که ریاضی را پیش بردند.']};
+ const modeInfo={challenge:['آرکید چالش ذهنی','بیش از ۴۰ بازی ریاضی در ۴ سطح، با جواب درست و مرور اشتباه‌ها.'],progress:['پیشرفت من','کارنامهٔ بازی‌ها، رکوردها و نشان‌های آزادشده.'],calculator:['ماشین‌حساب علمی','با دکمه‌ها حساب کن؛ نیازی به تایپ با کیبورد نیست.'],tools:['ابزارهای ریاضی','ابزارهای کاربردی از کسرها تا شمارنده‌ها و نسبت طلایی.'],assistant:['دستیار ریاضی SAM','توضیح‌های آموزشی کوتاه با نمونه؛ هر موضوع را در ابزار هم امتحان کن.'],exam:['ساخت آزمون','آزمون چهارگزینه‌ای برای هر پایه بساز و پاسخ‌نامه را ببین.'],history:['تاریخچهٔ ریاضیات ایران','از خوارزمی و خیام تا میرزاخانی؛ دانشمندانی که ریاضی را پیش بردند.']};
  function showMode(mode){
    if(!modeInfo[mode])return;
    document.querySelectorAll('.nav-item[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));

@@ -70,6 +70,53 @@
         <button class="tool danger" id="clearAllBtn">🧹 <span>پاک‌کردن همه شکل‌ها</span></button>
       </div>
 
+      <div class="param-box dim2">
+        <label for="paramIn" id="paramLabel">عدد ورودی</label>
+        <input id="paramIn" type="text" inputmode="decimal" autocomplete="off" value="3">
+        <p class="hint">این عدد برای ابزارهای شعاع، زاویه، ضریب و تعداد ضلع به کار می‌رود؛ ابزار را انتخاب کن تا برچسبش مشخص شود.</p>
+      </div>
+
+      <h3 class="tool-group-title dim2">نقطه و خط</h3>
+      <div class="tool-grid dim2">
+        <button class="tool" data-tool="parallel">∥ <span>خط موازی از نقطه</span></button>
+        <button class="tool" data-tool="perpline">⊥ <span>خط عمود از نقطه</span></button>
+        <button class="tool" data-tool="ray">→ <span>نیم‌خط</span></button>
+        <button class="tool" data-tool="vector">↗ <span>بردار</span></button>
+        <button class="tool" data-tool="pdist">↧ <span>فاصلهٔ نقطه از خط</span></button>
+      </div>
+
+      <h3 class="tool-group-title dim2">دایره و کمان</h3>
+      <div class="tool-grid dim2">
+        <button class="tool" data-tool="circle3">⊙ <span>دایره از سه نقطه</span></button>
+        <button class="tool" data-tool="circleRad">◉ <span>دایره با شعاع معین</span></button>
+        <button class="tool" data-tool="compass">⊚ <span>پرگار (کپی فاصله)</span></button>
+        <button class="tool" data-tool="tangent">⁄ <span>مماس از نقطه بر دایره</span></button>
+        <button class="tool" data-tool="arc3">⌒ <span>کمان از سه نقطه</span></button>
+        <button class="tool" data-tool="semicircle">◓ <span>نیم‌دایره از دو سر</span></button>
+        <button class="tool" data-tool="sector">◔ <span>قطاع دایره</span></button>
+      </div>
+
+      <h3 class="tool-group-title dim2">چندضلعی و زاویه</h3>
+      <div class="tool-grid dim2">
+        <button class="tool" data-tool="regular">⬡ <span>چندضلعی منتظم</span></button>
+        <button class="tool" data-tool="angleGiven">∡ <span>زاویهٔ با اندازهٔ معین</span></button>
+      </div>
+
+      <h3 class="tool-group-title dim2">تبدیل‌ها (ساخت تصویر)</h3>
+      <div class="tool-grid dim2">
+        <button class="tool" data-tool="translate">↦ <span>انتقال با بردار</span></button>
+        <button class="tool" data-tool="rotate">↻ <span>چرخش حول نقطه</span></button>
+        <button class="tool" data-tool="reflectline">⇋ <span>قرینه نسبت به خط</span></button>
+        <button class="tool" data-tool="reflectpt">⊖ <span>قرینه نسبت به نقطه</span></button>
+        <button class="tool" data-tool="dilate">⤢ <span>تجانس از نقطه</span></button>
+      </div>
+
+      <h3 class="tool-group-title dim2">مخروطی‌ها</h3>
+      <div class="tool-grid dim2">
+        <button class="tool" data-tool="ellipse">◎ <span>بیضی (دو کانون و یک نقطه)</span></button>
+        <button class="tool" data-tool="parabola">∪ <span>سهمی (کانون و خط هادی)</span></button>
+      </div>
+
       <div class="transform-box dim2">
         <p class="hint">تبدیل شکل انتخاب‌شده (حول مرکز آن):</p>
         <div class="transform-row">

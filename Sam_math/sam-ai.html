@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#090d1d">
   <title>SAM AI | دستیار هوشمند عمومی</title>
-  <link rel="stylesheet" href="sam-ai.css">
+  <link rel="stylesheet" href="sam-ai.css"><link rel="stylesheet" href="sam-features.css">
   <script src="digit-normalizer.js" defer></script>
   <script src="sam-ai.js" defer></script>
 </head>
@@ -26,6 +26,7 @@
       <p class="eyebrow">YOUR GENERAL AI COMPANION</p>
       <h1>سلام! من <span>SAM AI</span> هستم.</h1>
       <p class="hero-copy">هر چیزی می‌خواهی بپرس؛ از برنامه‌نویسی و علم تا نوشتن، یادگیری و ایده‌های تازه.</p>
+      <p id="heroGreeting" class="hero-greeting" hidden></p>
       <div class="connection-pill"><i id="connectionDot"></i><span id="connectionText">آمادهٔ اتصال؛ برای پاسخ‌گویی اینترنت لازم است.</span></div>
     </section>
     <section class="chat-card" aria-label="گفت‌وگو با SAM AI">
@@ -54,12 +55,22 @@
           <button id="imageButton" class="attach-btn" type="button" title="از متنی که نوشتی تصویر بساز">🖼 ساخت تصویر</button>
           <span id="voiceStatus" class="voice-status" aria-live="polite"></span>
         </div>
+        <p id="quotaLine" class="quota-line" aria-live="polite"></p>
         <div class="composer-bottom"><span id="charCount">۰ / 2000 </span><button id="sendButton" class="send-btn" type="submit"><span>ارسال پیام</span><span aria-hidden="true">➤</span></button></div>
       </form>
       <p id="statusMessage" class="status-message" role="status">SAM AI برای پاسخ‌گویی به اینترنت نیاز دارد؛ تاریخچه روی همین مرورگر ذخیره می‌شود. ابزارهای ریاضی SAM MATH جدا هستند.</p>
     </section>
     <p class="privacy-note">نکته: پرسش‌ها برای دریافت پاسخ به سرور آنلاین ارسال می‌شوند. تاریخچه در حافظهٔ همین مرورگر ذخیره می‌شود و با دکمهٔ «گفت‌وگوی تازه» پاک می‌شود؛ روی دستگاه دیگر خودکار همگام نمی‌شود. اطلاعات خصوصی یا رمز عبور نفرست. </p>
-  </main>
+    <section class="ai-notes" aria-labelledby="notesTitle">
+    <h2 id="notesTitle">محدودیت‌های ساخت تصویر</h2>
+    <ul class="notes-list">
+      <li><strong>حالت فعلی:</strong> روزی ۱ تصویر برای هر دستگاه.</li>
+      
+      <li><strong>گفت‌وگوی متنی:</strong> فعلاً محدودیت روزانهٔ جدا ندارد؛ ولی اگر سرویس هوش مصنوعی پر باشد، ممکن است پاسخ کمی دیرتر بیاید.</li>
+      
+    </ul>
+  </section>
+</main>
   <footer> SAM MATH · یادگیری با کنجکاوی شروع می‌شود | ساخته شده توسط گروه سام</footer>
 </body>
 </html>

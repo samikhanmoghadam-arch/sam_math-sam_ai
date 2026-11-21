@@ -1,0 +1,286 @@
+/* ==========================================================================
+   SAM MATH · استایل قابلیت‌های نسخهٔ ۲ (صفحهٔ اصلی و SAM AI)
+   از متغیرهای موجود استفاده می‌کند و برای هر دو حالت روشن و تاریک طراحی شده است.
+   ========================================================================== */
+
+/* ---------- پنجرهٔ ورود ---------- */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(6, 4, 20, .72);
+  backdrop-filter: blur(8px);
+}
+.gate[hidden] { display: none !important; }
+.gate-card {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 22px;
+  border-radius: 26px;
+  background: linear-gradient(150deg, #1a1440, #0f1b33);
+  border: 2px solid rgba(255, 210, 63, .45);
+  box-shadow: 0 0 0 6px rgba(157, 107, 255, .18), 0 30px 80px rgba(0, 0, 0, .5);
+  animation: gate-pop .45s cubic-bezier(.2, 1.4, .4, 1);
+  color: #f1f5ff;
+}
+body.light .gate-card { background: #ffffff; color: #17213b; }
+@keyframes gate-pop {
+  from { transform: scale(.85); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.gate-logo {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff5fa2, #9d6bff);
+  color: #fff;
+  font-size: 1.9rem;
+  animation: gate-bob 2.4s ease-in-out infinite;
+}
+@keyframes gate-bob { 50% { transform: translateY(-6px); } }
+.gate-card h2 { text-align: center; margin: 0; }
+.gate-card > p { margin: 0; color: var(--muted, #9caac7); font-size: .9rem; line-height: 1.9; text-align: center; }
+.gate-card label { display: flex; flex-direction: column; gap: 6px; color: var(--muted, #9caac7); font-size: .85rem; }
+.gate-card input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid #33415f;
+  background: #0a1020;
+  color: inherit;
+  font: inherit;
+}
+body.light .gate-card input { background: #eef2fa; color: #17213b; }
+.gate-error { color: #fda4af !important; min-height: 1.4em; font-weight: 700; text-align: center; margin: 0; }
+.gate-btn { padding: 13px; font-size: 1rem; }
+.gate-card .ghost-btn { width: 100%; }
+
+/* ---------- دکمهٔ کاربر در سربرگ ---------- */
+.profile-chip { white-space: nowrap; font-weight: 700; }
+
+/* ---------- نشان «جدید» ---------- */
+.new-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #ffd23f;
+  color: #1d1400;
+  font-size: .7rem;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.tool-new { border-color: rgba(255, 95, 162, .55) !important; box-shadow: 0 0 0 3px rgba(255, 95, 162, .12); }
+
+/* ---------- ماشین‌حساب: کپی و تاریخچه ---------- */
+.calc-extras { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.calc-history {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed var(--line, #283654);
+  background: rgba(11, 18, 36, .6);
+}
+.calc-history-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.calc-history-head h3 { margin: 0; font-size: 1rem; }
+.calc-history-head .ghost-btn { padding: 6px 12px; font-size: .8rem; }
+.calc-history-list { list-style: none; padding: 0; margin: 10px 0 6px; display: grid; gap: 8px; }
+.calc-history-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line, #283654);
+  background: #0c1426;
+  color: inherit;
+  text-align: left;
+  direction: ltr;
+  transition: transform .12s, border-color .12s, background .3s;
+}
+.calc-history-item:hover { transform: translateX(3px); border-color: #a78bfa; }
+.calc-history-item.flash-ok { background: rgba(52, 211, 153, .18); border-color: #34d399; }
+.hx-expr { font-size: .9rem; color: var(--muted, #9caac7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hx-val { color: #67e8f9; font-size: 1rem; }
+body.light .calc-history-item { background: #f4f7fd; }
+
+/* ---------- توضیح ساده زیر ابزارها ---------- */
+.simple-explain { margin-top: 10px; }
+.simple-explain summary { cursor: pointer; color: #67e8f9; font-weight: 700; padding: 4px; }
+.simple-explain p { white-space: pre-wrap; line-height: 1.9; }
+.flash-ok { outline: 2px solid #34d399; }
+
+/* ---------- چالش ذهنی ---------- */
+.challenge-setup { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin: 16px 0; }
+.challenge-setup label { display: flex; flex-direction: column; gap: 6px; color: var(--muted, #9caac7); font-size: .85rem; flex: 1; min-width: 180px; }
+.challenge-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ch-stat {
+  padding: 14px;
+  border-radius: 16px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 95, 162, .14), rgba(94, 200, 255, .12));
+  border: 1px solid var(--line, #283654);
+}
+.ch-stat span { display: block; color: var(--muted, #9caac7); font-size: .8rem; }
+.ch-stat strong { font-size: 1.6rem; color: #ffd23f; }
+.ch-question {
+  margin: 18px 0 12px;
+  min-height: 92px;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  background: #070b17;
+  border: 1px solid #283553;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 900;
+  direction: ltr;
+  text-align: center;
+}
+body.light .ch-question { background: #eef2fa; color: #17213b; }
+.ch-form { display: flex; gap: 10px; }
+.ch-form input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #33415f;
+  background: #0a1020;
+  color: inherit;
+  font: inherit;
+  font-size: 1.2rem;
+  text-align: center;
+}
+body.light .ch-form input { background: #eef2fa; color: #17213b; }
+.ch-form input:disabled { opacity: .5; }
+#chFeedback { min-height: 2.5em; }
+
+/* ---------- پیشرفت و نشان‌ها ---------- */
+.progress-hero { display: flex; align-items: center; gap: 16px; margin: 6px 0 18px; }
+.progress-hero strong { font-size: 1.3rem; }
+.progress-hero p { margin: 4px 0; }
+.avatar-big {
+  width: 70px;
+  height: 70px;
+  flex: 0 0 70px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff5fa2, #9d6bff 55%, #5ec8ff);
+  color: #fff;
+  font-size: 1.8rem;
+  box-shadow: 0 0 0 4px rgba(255, 210, 63, .25);
+}
+.prog-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 12px; }
+.prog-card {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 16px 10px;
+  border-radius: 16px;
+  border: 1px solid var(--line, #283654);
+  background: #0b1224;
+  text-align: center;
+}
+.prog-icon { font-size: 1.5rem; }
+.prog-value { font-size: 1.4rem; color: #67e8f9; }
+.prog-card small { color: var(--muted, #9caac7); }
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-top: 10px; }
+.badge {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed var(--line, #283654);
+  background: #0b1224;
+  opacity: .6;
+  transition: transform .15s;
+}
+.badge.on { opacity: 1; border-style: solid; border-color: #ffd23f; background: linear-gradient(135deg, rgba(255, 210, 63, .14), rgba(255, 95, 162, .1)); }
+.badge.on:hover { transform: translateY(-3px) rotate(-1deg); }
+.badge-icon { font-size: 1.8rem; }
+.badge small { color: var(--muted, #9caac7); line-height: 1.7; }
+
+/* ---------- ارتباط ---------- */
+.contact-form { display: grid; gap: 12px; max-width: 640px; }
+.contact-form label { display: flex; flex-direction: column; gap: 6px; color: var(--muted, #9caac7); font-size: .85rem; }
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid #33415f;
+  background: #0a1020;
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+body.light .contact-form input,
+body.light .contact-form textarea { background: #eef2fa; color: #17213b; }
+.contact-share { margin-top: 16px; }
+
+/* ---------- SAM AI: خوش‌آمد، سهمیه، محدودیت‌ها و ایمیل ---------- */
+.hero-greeting {
+  margin: 4px 0 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffd23f;
+}
+.quota-line {
+  margin: 8px 0 0;
+  font-size: .85rem;
+  color: var(--ai-muted, #9caac7);
+  min-height: 1.2em;
+}
+.ai-notes {
+  margin-top: 18px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(94, 200, 255, .35);
+  background: linear-gradient(145deg, rgba(94, 200, 255, .08), rgba(157, 107, 255, .1));
+}
+.ai-notes h2 { margin: 0 0 10px; font-size: 1.15rem; }
+.notes-list { margin: 0 0 14px; padding-right: 20px; line-height: 2; color: var(--ai-muted, #cbd5f0); font-size: .92rem; }
+.notes-list strong { color: #ffd23f; }
+.ai-email-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.ai-email-form label { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; font-size: .88rem; color: var(--ai-muted, #cbd5f0); }
+.ai-email-form input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid #33415f;
+  background: #0a1020;
+  color: inherit;
+  font: inherit;
+}
+body.light-theme .ai-email-form input { background: #ffffff; color: #17213b; }
+
+@media (max-width: 760px) {
+  .challenge-board { grid-template-columns: 1fr; }
+  .prog-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .progress-hero { flex-direction: column; text-align: center; }
+  .gate-card { padding: 20px 16px; }
+}
+@media (max-width: 520px) {
+  .profile-chip { font-size: .8rem; padding: 7px 9px; }
+  .ch-form { flex-direction: column; }
+}
+
+/* Arcade visual polish */
+#challengePanel .ch-question{position:relative;overflow:hidden;border:1px solid rgba(103,232,249,.35);box-shadow:0 12px 38px rgba(34,211,238,.10);animation:arcade-pulse 2.8s ease-in-out infinite;}
+#challengePanel .ch-question:after{content:"";position:absolute;inset:-80% -20%;background:linear-gradient(110deg,transparent 42%,rgba(255,255,255,.09) 50%,transparent 58%);transform:translateX(-70%);animation:arcade-sweep 5s linear infinite;pointer-events:none;}
+#challengePanel .challenge-setup select{min-width:220px;}
+#challengePanel .challenge-board .ch-stat{transition:transform .2s,border-color .2s;}
+#challengePanel .challenge-board .ch-stat:hover{transform:translateY(-4px);border-color:#67e8f9;}
+@keyframes arcade-pulse{50%{box-shadow:0 14px 44px rgba(139,92,246,.19);}}
+@keyframes arcade-sweep{to{transform:translateX(70%);}}
+@media(prefers-reduced-motion:reduce){#challengePanel .ch-question,#challengePanel .ch-question:after{animation:none;}}

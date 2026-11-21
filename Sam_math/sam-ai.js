@@ -5,6 +5,7 @@
   // همین آدرس را در sam-voice.js هم بگذار.
   const SAM_AI_URL = "https://sam-ai-backend.sami-math-lab.workers.dev";
   const STORAGE_KEY = 'sam_ai_conversation_v1';
+  try { localStorage.removeItem('sam_profile_v1'); } catch { /* ignore */ }
   const $ = (id) => document.getElementById(id);
   // Appearance only: independent light/dark preference for the SAM AI page.
   const themeButton = $('aiThemeBtn');
@@ -46,6 +47,60 @@
   const MAX_SAVED_CHARS = 30000;
   let busy = false;
   let history = loadHistory();
+
+  // ===== شناسهٔ دستگاه و سهمیهٔ مهمان =====
+  const DEVICE_KEY = 'sam_device_v1';
+  const readJSON = (key, fallback) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
+  const writeJSON = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* مرورگر اجازه نداد */ } };
+  function profileData() { return {}; }
+  function displayName() { return ''; }
+  function deviceId() {
+    let id = readJSON(DEVICE_KEY, '');
+    if (typeof id !== 'string' || id.length < 8) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+      writeJSON(DEVICE_KEY, id);
+    }
+    return id;
+  }
+  const heroGreeting = $('heroGreeting');
+  const quotaLine = $('quotaLine');
+  let quota = null;
+
+  function welcomeText() {
+    const name = displayName();
+    return name
+      ? `سلام ${name}! 😊 من SAM AI هستم؛ می‌تونم در برنامه‌نویسی، علوم، ریاضی، نوشتن، یادگیری و ایده‌پردازی کمکت کنم. چی تو ذهنته؟`
+      : 'سلام دوست من! 😊 من SAM AI هستم؛ می‌تونم در برنامه‌نویسی، علوم، ریاضی، نوشتن، یادگیری و ایده‌پردازی کمکت کنم. چی تو ذهنته؟';
+  }
+
+  function greetHero() {
+    if (!heroGreeting) return;
+    const name = displayName();
+    heroGreeting.hidden = !name;
+    if (name) heroGreeting.textContent = `سلام ${name} 👋 خوش اومدی! امروز چی یاد بگیریم؟`;
+  }
+
+  function renderQuota() {
+    if (!quotaLine) return;
+    if (!quota) { quotaLine.textContent = ''; return; }
+    const who = 'مهمان';
+    const left = quota.enforced
+      ? ` · امروز ${faNumber(quota.remaining)} از ${faNumber(quota.limit)} تصویر باقی مانده`
+      : ` · سقف روزانه: ${faNumber(quota.limit)} تصویر`;
+    quotaLine.textContent = `🖼 ${who}${left}`;
+  }
+
+  async function refreshQuota() {
+    try {
+      const res = await fetch(SAM_AI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'quota', deviceId: deviceId() })
+      });
+      const data = await res.json();
+      if (res.ok && data && typeof data.limit === 'number') { quota = data; renderQuota(); }
+    } catch { /* نمایش سهمیه اختیاری است؛ گفت‌وگو جدا کار می‌کند */ }
+  }
 
   function setStatus(text, isError = false) {
     status.textContent = text;
@@ -158,7 +213,7 @@
   function renderSavedHistory() {
     messages.replaceChildren();
     if (!history.length) {
-      addMessage('assistant', 'سلام دوست من! 😊 من SAM AI هستم؛ می‌تونم در برنامه‌نویسی، علوم، ریاضی، نوشتن، یادگیری و ایده‌پردازی کمکت کنم. چی تو ذهنته؟');
+      addMessage('assistant', welcomeText());
       return;
     }
     for (const item of history) addMessage(item.role, item.content);
@@ -250,7 +305,9 @@
           messages: outgoing,
           attachment: imageData ? { name: attachment.file.name, type: attachment.file.type || 'image/jpeg', data: imageData } : null,
           web: Boolean(webToggle && webToggle.checked),
-          image: makeImage
+          image: makeImage,
+          user: displayName(),
+          deviceId: deviceId()
         }),
         signal: controller.signal
       });
@@ -281,6 +338,7 @@
         ? 'پاسخ دریافت شد؛ گفت‌وگو روی همین مرورگر ذخیره شد.'
         : 'پاسخ دریافت شد، اما مرورگر اجازهٔ ذخیرهٔ تاریخچه را نداد.');
       dot.className = 'online';
+      if (makeImage) refreshQuota();
       connectionText.textContent = 'اتصال موفق';
     } catch (error) {
       const message = error.name === 'AbortError'
@@ -456,4 +514,7 @@
   renderSavedHistory();
   updateCount();
   checkConfig();
+  greetHero();
+  refreshQuota();
+
 })();

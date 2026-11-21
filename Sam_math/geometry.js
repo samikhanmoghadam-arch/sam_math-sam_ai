@@ -22,6 +22,8 @@
   let objects = [], history = [], nextId = 1;
   let tool = "select", pending = [], polygonIds = [];
   let dragPoint = null, dragBefore = null, panStart = null, selectedId = null;
+  // شکلی که برای ابزارهای تبدیل (انتقال، چرخش، قرینه، تجانس) انتخاب شده است
+  let pickedId = null;
 
   const palette = {
     point: "#67e8f9",
@@ -34,7 +36,13 @@
     bisector: "#fb923c",
     derived: "#f472b6",
     stroke: "#e879f9",
-    measure: "#fde047"
+    measure: "#fde047",
+    ray: "#93c5fd",
+    vector: "#fb7185",
+    pdist: "#f87171",
+    arc: "#7dd3fc",
+    ellipse: "#a5b4fc",
+    parabola: "#f9a8d4"
   };
 
   const toolNames = {
@@ -51,9 +59,31 @@
     stroke: "قلم آزاد",
     measure: "اندازه‌گیری فاصله",
     intersect: "تقاطع دو خط",
-    foot: "پای عمود"
+    foot: "پای عمود",
+    parallel: "خط موازی",
+    perpline: "خط عمود",
+    ray: "نیم‌خط",
+    vector: "بردار",
+    pdist: "فاصلهٔ نقطه از خط",
+    circle3: "دایره از سه نقطه",
+    circleRad: "دایره با شعاع معین",
+    compass: "پرگار",
+    tangent: "مماس بر دایره",
+    arc3: "کمان از سه نقطه",
+    semicircle: "نیم‌دایره",
+    sector: "قطاع دایره",
+    regular: "چندضلعی منتظم",
+    angleGiven: "زاویهٔ معین",
+    translate: "انتقال با بردار",
+    rotate: "چرخش",
+    reflectline: "قرینه نسبت به خط",
+    reflectpt: "قرینه نسبت به نقطه",
+    dilate: "تجانس",
+    ellipse: "بیضی",
+    parabola: "سهمی"
   };
 
+  // نام نوع نقطه‌های وابسته، برای نمایش در اطلاعات شکل
   const depNames = {
     midpoint: "نقطهٔ وسط",
     centroid: "مرکز ثقل",
@@ -61,8 +91,25 @@
     incenter: "مرکز دایرهٔ محاطی",
     orthocenter: "مرکز ارتفاعی",
     intersect: "نقطهٔ تقاطع",
-    foot: "پای عمود"
+    foot: "پای عمود",
+    translate: "تصویر انتقال",
+    rotate: "تصویر چرخش",
+    reflectpt: "تصویر قرینهٔ نقطه‌ای",
+    reflectline: "تصویر قرینهٔ خطی",
+    dilate: "تصویر تجانس",
+    regular: "رأس چندضلعی منتظم",
+    tangent: "نقطهٔ تماس مماس"
   };
+
+  // برچسب کادر عدد ورودی برای هر ابزار
+  const paramLabels = {
+    circleRad: "شعاع دایره",
+    rotate: "زاویهٔ چرخش (درجه؛ مثبت = خلاف عقربه‌ها)",
+    dilate: "ضریب تجانس (مثلاً ۲ = دو برابر)",
+    angleGiven: "اندازهٔ زاویه (درجه، بین ۰ تا ۱۸۰)",
+    regular: "تعداد ضلع‌ها (۳ تا ۲۴)"
+  };
+  const paramDefaults = { circleRad: "3", rotate: "90", dilate: "2", angleGiven: "60", regular: "6" };
 
   const fmt = n => Number.isFinite(n) ? String(+n.toFixed(3)) : "—";
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -189,9 +236,9 @@
   }
 
   // A point whose position is computed from other points (moves with them).
-  function addDerivedPoint(kind, base, of) {
+  function addDerivedPoint(kind, base, of, extra) {
     const p = addObject({
-      type: "point", x: 0, y: 0, label: uniqueLabel(base), dep: { kind, of }
+      type: "point", x: 0, y: 0, label: uniqueLabel(base), dep: { kind, of, ...(extra || {}) }
     });
     computeDep(p);
     return p;
@@ -258,6 +305,12 @@
       Object.assign(p, clampWorld({ x: A.x + t * dx, y: A.y + t * dy }));
       return;
     }
+    if (TRANSFORM_KINDS.includes(p.dep.kind)) {
+      const q = transformCoords(p.dep, P);
+      if (q) Object.assign(p, clampWorld(q));
+      return;
+    }
+
     const [a, b, c] = P;
     let r = null;
 
@@ -336,6 +389,178 @@
     return Math.acos(cos) * 180 / Math.PI;
   }
 
+  /* ---------- ابزارهای جدید: تبدیل، کمان، بیضی، سهمی ---------- */
+
+  // نوع‌های نقطهٔ وابسته که مختصاتشان از تبدیل یا ساختار دیگری به دست می‌آید
+  const TRANSFORM_KINDS = ["translate", "rotate", "reflectpt", "reflectline", "dilate", "regular", "tangent"];
+
+  // مختصات نقطهٔ وابسته را از نقطه‌های والد حساب می‌کند (null یعنی ساخت ممکن نیست).
+  // P: آرایه‌ای از نقطه‌های والد به ترتیب dep.of
+  function transformCoords(dep, P) {
+    const k = dep.kind, par = dep.par;
+    if (k === "translate") {
+      const [s, A, B] = P;
+      return { x: s.x + B.x - A.x, y: s.y + B.y - A.y };
+    }
+    if (k === "rotate") {
+      const [s, C] = P;
+      const t = (par || 0) * Math.PI / 180, c = Math.cos(t), sn = Math.sin(t);
+      const dx = s.x - C.x, dy = s.y - C.y;
+      return { x: C.x + dx * c - dy * sn, y: C.y + dx * sn + dy * c };
+    }
+    if (k === "dilate") {
+      const [s, C] = P;
+      return { x: C.x + par * (s.x - C.x), y: C.y + par * (s.y - C.y) };
+    }
+    if (k === "reflectpt") {
+      const [s, C] = P;
+      return { x: 2 * C.x - s.x, y: 2 * C.y - s.y };
+    }
+    if (k === "reflectline") {
+      const [s, A, B] = P;
+      const dx = B.x - A.x, dy = B.y - A.y, len2 = dx * dx + dy * dy;
+      if (len2 < 1e-12) return null;
+      const t = ((s.x - A.x) * dx + (s.y - A.y) * dy) / len2;
+      const fx = A.x + t * dx, fy = A.y + t * dy;
+      return { x: 2 * fx - s.x, y: 2 * fy - s.y };
+    }
+    if (k === "regular") {
+      // دو رأس اول A و B؛ رأس k ام روی دایرهٔ محیطی چندضلعی منتظم با n ضلع
+      const [A, B] = P;
+      const n = par, idx = dep.k;
+      const s = dist(A, B);
+      if (s < 1e-9 || !Number.isInteger(n) || n < 3) return null;
+      const ux = (B.x - A.x) / s, uy = (B.y - A.y) / s;
+      const h = s / (2 * Math.tan(Math.PI / n));
+      const cx = (A.x + B.x) / 2 - uy * h, cy = (A.y + B.y) / 2 + ux * h;
+      const R = s / (2 * Math.sin(Math.PI / n));
+      const phi = Math.atan2(A.y - cy, A.x - cx) + idx * 2 * Math.PI / n;
+      return { x: cx + R * Math.cos(phi), y: cy + R * Math.sin(phi) };
+    }
+    if (k === "tangent") {
+      // P نقطهٔ بیرونی، O مرکز، A روی دایره؛ dep.k = 0 یا 1 برای دو نقطهٔ تماس
+      const [Pt, O, A] = P;
+      const r = dist(O, A), d = dist(Pt, O);
+      if (r < 1e-9 || d <= r + 1e-9) return null;
+      const phi = Math.atan2(Pt.y - O.y, Pt.x - O.x);
+      const th = Math.acos(r / d) * (dep.k === 0 ? 1 : -1);
+      return { x: O.x + r * Math.cos(phi + th), y: O.y + r * Math.sin(phi + th) };
+    }
+    return null;
+  }
+
+  // مشخصات کمان/قطاع/نیم‌دایره در دستگاه جهانی: مرکز، شعاع، زاویهٔ شروع و جارو
+  function arcSpec(o) {
+    const O = getPoint(o.center), A = getPoint(o.a), C = getPoint(o.c);
+    if (!O || !A || !C) return null;
+    const r = dist(O, A);
+    if (r < 1e-9) return null;
+    const TAU = 2 * Math.PI;
+    const norm = t => ((t % TAU) + TAU) % TAU;
+    const alpha = Math.atan2(A.y - O.y, A.x - O.x);
+    const beta = Math.atan2(C.y - O.y, C.x - O.x);
+    let ccw, sweep;
+    if (o.sector) {
+      ccw = true;
+      sweep = norm(beta - alpha);
+    } else {
+      // نقطهٔ عبور: اگر b باشد همان، وگرنه برای نیم‌دایره سمت چپ خط A→C
+      const B = o.b != null ? getPoint(o.b) : null;
+      const gamma = B
+        ? Math.atan2(B.y - O.y, B.x - O.x)
+        : Math.atan2(C.x - A.x, -(C.y - A.y)) ;
+      ccw = norm(gamma - alpha) < norm(beta - alpha);
+      sweep = ccw ? norm(beta - alpha) : norm(alpha - beta);
+    }
+    return { O, r, alpha, sweep, ccw, sector: !!o.sector };
+  }
+
+  // مشخصات بیضی: مرکز، نیم‌محورها و بردار واحد محور بزرگ
+  function ellipseSpec(o) {
+    const F1 = getPoint(o.f1), F2 = getPoint(o.f2), P = getPoint(o.p);
+    if (!F1 || !F2 || !P) return null;
+    const c2 = dist(F1, F2);
+    if (c2 < 1e-9) return null;
+    const c = c2 / 2;
+    const a = (dist(P, F1) + dist(P, F2)) / 2;
+    if (a - c < 1e-6) return null;
+    const b = Math.sqrt(a * a - c * c);
+    const u = { x: (F2.x - F1.x) / c2, y: (F2.y - F1.y) / c2 };
+    return { M: { x: (F1.x + F2.x) / 2, y: (F1.y + F2.y) / 2 }, a, b, u };
+  }
+
+  // مشخصات سهمی: کانون، پای عمود کانون بر خط هادی، بردار هادی u و بردار عمود n و فاصلهٔ کانون تا خط هادی f
+  function parabolaSpec(o) {
+    const F = getPoint(o.f), A = getPoint(o.a), B = getPoint(o.b);
+    if (!F || !A || !B) return null;
+    const len = dist(A, B);
+    if (len < 1e-9) return null;
+    const u = { x: (B.x - A.x) / len, y: (B.y - A.y) / len };
+    const n = { x: -u.y, y: u.x };
+    const f = (F.x - A.x) * n.x + (F.y - A.y) * n.y;
+    if (Math.abs(f) < 1e-6) return null;
+    return { Fp: { x: F.x - n.x * f, y: F.y - n.y * f }, u, n, f, A };
+  }
+
+  // خط بی‌نهایت گذرنده از دو نقطهٔ جهانی (به صورت نقطه و جهت روی صفحهٔ نمایش)
+  function dirlineScreen(o) {
+    const P = getPoint(o.p), A = getPoint(o.a), B = getPoint(o.b);
+    if (!P || !A || !B) return null;
+    let dx = B.x - A.x, dy = B.y - A.y;
+    if (o.perp) { const t = dx; dx = -dy; dy = t; }
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-9) return null;
+    return { m: worldToScreen(P), dir: { x: dx / len, y: -dy / len } };
+  }
+
+  // کوتاه‌ترین فاصلهٔ یک نقطهٔ صفحه تا یک چندضلعی باز (برای برخورد موس با منحنی‌ها)
+  function polyHit(x, y, pts, tol) {
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (distToSegment(x, y, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y) < tol) return true;
+    }
+    return false;
+  }
+
+  // عدد ورودی را می‌خواند؛ اگر معتبر نباشد null برمی‌گرداند
+  function readParam() {
+    const raw = ($("paramIn")?.value || "").trim();
+    const v = Number(window.SAMNormalizeDigits ? window.SAMNormalizeDigits(raw) : raw);
+    return raw !== "" && Number.isFinite(v) ? v : null;
+  }
+
+  // شناسه‌های نقطه‌هایی که یک شکل به آن‌ها وابسته است
+  function refIds(o) {
+    const ids = [o.a, o.b, o.c, o.vertex, o.center, o.through, o.p, o.f, o.f1, o.f2, ...(o.points || [])];
+    return [...new Set(ids.filter(id => id != null && getPoint(id)))];
+  }
+
+  // انواع شکلی که می‌توانند تصویر بگیرند
+  const COPYABLE = ["segment", "line", "ray", "vector", "circle", "polygon", "angle", "arc", "dirline", "perpbis", "bisector"];
+
+  // داده‌های شکل تصویر، با جایگزینی هر نقطه با تصویرش (M)
+  function copyShape(o, M) {
+    switch (o.type) {
+      case "segment": case "line": case "ray": case "vector":
+        return { type: o.type, a: M(o.a), b: M(o.b) };
+      case "circle":
+        if (o.inradius || o.through == null) return null;
+        return { type: "circle", center: M(o.center), through: M(o.through), radius: 0 };
+      case "polygon":
+        return { type: "polygon", points: o.points.map(M) };
+      case "angle":
+        return { type: "angle", a: M(o.a), vertex: M(o.vertex), c: M(o.c) };
+      case "bisector":
+        return { type: "bisector", a: M(o.a), vertex: M(o.vertex), c: M(o.c) };
+      case "perpbis":
+        return { type: "perpbis", a: M(o.a), b: M(o.b) };
+      case "arc":
+        return { type: "arc", center: M(o.center), a: M(o.a), c: M(o.c), b: o.b != null ? M(o.b) : null, sector: !!o.sector };
+      case "dirline":
+        return { type: "dirline", p: M(o.p), a: M(o.a), b: M(o.b), perp: !!o.perp };
+    }
+    return null;
+  }
+
   /* ---------- hit testing ---------- */
 
   function distToSegment(px, py, ax, ay, bx, by) {
@@ -400,13 +625,50 @@
         continue;
       }
 
-      if (o.type === "segment" || o.type === "line") {
+      if (o.type === "dirline") {
+        const s = dirlineScreen(o);
+        if (s && distToLine(x, y, s.m.x, s.m.y, s.m.x + s.dir.x, s.m.y + s.dir.y) < tol) return o;
+        continue;
+      }
+      if (o.type === "pdist") {
+        const P = getPoint(o.p), A = getPoint(o.a), B = getPoint(o.b);
+        const F = P && A && B ? footWorld(P, A, B) : null;
+        if (F) {
+          const s = worldToScreen(P), t = worldToScreen(F);
+          if (distToSegment(x, y, s.x, s.y, t.x, t.y) < tol) return o;
+        }
+        continue;
+      }
+      if (o.type === "arc") {
+        const s = arcSpec(o);
+        if (s && arcHit(x, y, s, tol)) return o;
+        continue;
+      }
+      if (o.type === "ellipse") {
+        const e = ellipseSpec(o);
+        if (e && polyHit(x, y, ellipsePoints(e), tol)) return o;
+        continue;
+      }
+      if (o.type === "parabola") {
+        const pb = parabolaSpec(o);
+        if (pb && polyHit(x, y, parabolaPoints(pb), tol)) return o;
+        continue;
+      }
+
+      if (o.type === "segment" || o.type === "line" || o.type === "ray" || o.type === "vector") {
         const a = getPoint(o.a), b = getPoint(o.b);
         if (!a || !b) continue;
         const p = worldToScreen(a), q = worldToScreen(b);
-        const d = o.type === "line"
-          ? distToLine(x, y, p.x, p.y, q.x, q.y)
-          : distToSegment(x, y, p.x, p.y, q.x, q.y);
+        let d;
+        if (o.type === "line") {
+          d = distToLine(x, y, p.x, p.y, q.x, q.y);
+        } else if (o.type === "ray") {
+          const len = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+          const reach = Math.hypot(W, H) * 2;
+          d = distToSegment(x, y, p.x, p.y, p.x + (q.x - p.x) / len * reach, p.y + (q.y - p.y) / len * reach);
+        } else {
+          d = distToSegment(x, y, p.x, p.y, q.x, q.y);
+        }
         if (d < tol) return o;
       } else if (o.type === "circle") {
         const c = getPoint(o.center);
@@ -575,11 +837,29 @@
       const reach = Math.hypot(W, H) * 2;
       ctx.moveTo(p.x - dx / length * reach, p.y - dy / length * reach);
       ctx.lineTo(p.x + dx / length * reach, p.y + dy / length * reach);
+    } else if (o.type === "ray") {
+      const reach = Math.hypot(W, H) * 2;
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + dx / length * reach, p.y + dy / length * reach);
     } else {
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(q.x, q.y);
     }
     ctx.stroke();
+
+    if (o.type === "vector") {
+      // نوک پیکان در انتهای بردار
+      const ux = dx / length, uy = dy / length, head = 12;
+      ctx.beginPath();
+      ctx.moveTo(q.x, q.y);
+      ctx.lineTo(q.x - ux * head - uy * head * .5, q.y - uy * head + ux * head * .5);
+      ctx.moveTo(q.x, q.y);
+      ctx.lineTo(q.x - ux * head + uy * head * .5, q.y - uy * head - ux * head * .5);
+      ctx.stroke();
+      ctx.fillStyle = tint("#fecdd3");
+      ctx.font = "12px system-ui";
+      ctx.fillText(`بردار ${fmt(dist(a, b))}`, (p.x + q.x) / 2 + 6, (p.y + q.y) / 2 - 7);
+    }
 
     if (o.type === "segment") {
       ctx.fillStyle = tint("#ddd6fe");
@@ -754,6 +1034,177 @@
     ctx.textBaseline = "alphabetic";
   }
 
+  // پای عمود نقطهٔ P بر خط AB (در دستگاه جهانی)
+  function footWorld(P, A, B) {
+    const dx = B.x - A.x, dy = B.y - A.y, len2 = dx * dx + dy * dy;
+    if (len2 < 1e-12) return null;
+    const t = ((P.x - A.x) * dx + (P.y - A.y) * dy) / len2;
+    return { x: A.x + t * dx, y: A.y + t * dy };
+  }
+
+  // نقطه‌های نمونه‌برداری‌شدهٔ بیضی روی صفحه
+  function ellipsePoints(e) {
+    const n = { x: -e.u.y, y: e.u.x }, pts = [];
+    for (let i = 0; i <= 160; i++) {
+      const t = i / 160 * 2 * Math.PI;
+      const ca = e.a * Math.cos(t), sb = e.b * Math.sin(t);
+      pts.push(worldToScreen({
+        x: e.M.x + ca * e.u.x + sb * n.x,
+        y: e.M.y + ca * e.u.y + sb * n.y
+      }));
+    }
+    return pts;
+  }
+
+  // نقطه‌های نمونه‌برداری‌شدهٔ سهمی روی صفحه: y = (x² + f²) / (2f) در دستگاه محلی
+  function parabolaPoints(pb) {
+    const f = pb.f, X = Math.sqrt(Math.max(LIMIT * LIMIT, 6 * LIMIT * Math.abs(f) - f * f)), N = 300, pts = [];
+    for (let i = 0; i <= N; i++) {
+      const x = -X + 2 * X * i / N;
+      const y = (x * x + f * f) / (2 * f);
+      pts.push(worldToScreen({
+        x: pb.Fp.x + x * pb.u.x + y * pb.n.x,
+        y: pb.Fp.y + x * pb.u.y + y * pb.n.y
+      }));
+    }
+    return pts;
+  }
+
+  // برخورد موس با کمان یا قطاع (شعاع‌های قطاع هم حساب می‌شوند)
+  function arcHit(x, y, s, tol) {
+    const c = worldToScreen(s.O), R = s.r * scale;
+    const d = Math.hypot(x - c.x, y - c.y);
+    const TAU = 2 * Math.PI;
+    const norm = t => ((t % TAU) + TAU) % TAU;
+    const theta = Math.atan2(-(y - c.y), x - c.x);
+    const inside = s.ccw ? norm(theta - s.alpha) <= s.sweep + 1e-9 : norm(s.alpha - theta) <= s.sweep + 1e-9;
+    if (inside && Math.abs(d - R) < tol) return true;
+    if (!s.sector) return false;
+    // در قطاع، دو شعاع مرزی هم قابل انتخاب‌اند
+    const end = s.ccw ? s.alpha + s.sweep : s.alpha - s.sweep;
+    for (const t of [s.alpha, end]) {
+      const e = { x: c.x + R * Math.cos(-t), y: c.y + R * Math.sin(-t) };
+      if (distToSegment(x, y, c.x, c.y, e.x, e.y) < tol) return true;
+    }
+    return false;
+  }
+
+  function drawDirLine(o) {
+    const s = dirlineScreen(o);
+    if (!s) return;
+    const reach = Math.hypot(W, H) * 2;
+    ctx.save();
+    ctx.strokeStyle = pal("line");
+    ctx.lineWidth = selectedId === o.id ? 4 : 2.2;
+    if (o.perp) ctx.setLineDash([10, 5]);
+    ctx.beginPath();
+    ctx.moveTo(s.m.x - s.dir.x * reach, s.m.y - s.dir.y * reach);
+    ctx.lineTo(s.m.x + s.dir.x * reach, s.m.y + s.dir.y * reach);
+    ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = pal("line");
+    ctx.font = "12px system-ui";
+    ctx.fillText(o.perp ? "عمود" : "موازی", s.m.x + 8, s.m.y - 8);
+  }
+
+  function drawPDist(o) {
+    const P = getPoint(o.p), A = getPoint(o.a), B = getPoint(o.b);
+    if (!P || !A || !B) return;
+    const F = footWorld(P, A, B);
+    if (!F) return;
+    const s = worldToScreen(P), t = worldToScreen(F);
+    const sa = worldToScreen(A), sb = worldToScreen(B);
+    ctx.save();
+    // خط مرجع کم‌رنگ
+    const reach = Math.hypot(W, H) * 2;
+    const dx = sb.x - sa.x, dy = sb.y - sa.y, len = Math.hypot(dx, dy) || 1;
+    ctx.strokeStyle = "rgba(248,113,113,.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sa.x - dx / len * reach, sa.y - dy / len * reach);
+    ctx.lineTo(sa.x + dx / len * reach, sa.y + dy / len * reach);
+    ctx.stroke();
+    // فاصلهٔ عمودی
+    ctx.strokeStyle = pal("pdist");
+    ctx.lineWidth = selectedId === o.id ? 3.5 : 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(t.x, t.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = tint("#fecaca");
+    ctx.font = "bold 12px system-ui";
+    ctx.fillText(`d = ${fmt(dist(P, F))}`, (s.x + t.x) / 2 + 8, (s.y + t.y) / 2 - 6);
+    ctx.restore();
+  }
+
+  function drawArc(o) {
+    const s = arcSpec(o);
+    if (!s) return;
+    const c = worldToScreen(s.O), R = s.r * scale;
+    const a0 = -s.alpha, a1 = -s.alpha + (s.ccw ? -s.sweep : s.sweep);
+    ctx.save();
+    ctx.strokeStyle = pal("arc");
+    ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
+    ctx.beginPath();
+    if (o.sector) ctx.moveTo(c.x, c.y);
+    ctx.arc(c.x, c.y, R, a0, a1, s.ccw);
+    if (o.sector) {
+      ctx.closePath();
+      ctx.fillStyle = "rgba(125,211,252,.15)";
+      ctx.fill();
+    }
+    ctx.stroke();
+    const mid = s.alpha + (s.ccw ? s.sweep / 2 : -s.sweep / 2);
+    const label = o.sector ? "قطاع" : (o.b == null ? "نیم‌دایره" : "کمان");
+    ctx.fillStyle = tint("#bae6fd");
+    ctx.font = "12px system-ui";
+    ctx.fillText(`${label} r = ${fmt(s.r)}`, c.x + Math.cos(mid) * (R + 10), c.y - Math.sin(mid) * (R + 10));
+    ctx.restore();
+  }
+
+  function drawEllipse(o) {
+    const e = ellipseSpec(o);
+    if (!e) return;
+    const s = worldToScreen(e.M);
+    ctx.save();
+    ctx.strokeStyle = pal("ellipse");
+    ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
+    ctx.beginPath();
+    ctx.ellipse(s.x, s.y, e.a * scale, e.b * scale, Math.atan2(-e.u.y, e.u.x), 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fillStyle = tint("#c7d2fe");
+    ctx.font = "12px system-ui";
+    ctx.fillText(`بیضی a = ${fmt(e.a)} · b = ${fmt(e.b)}`, s.x + 8, s.y - e.b * scale - 8);
+    ctx.restore();
+  }
+
+  function drawParabola(o) {
+    const pb = parabolaSpec(o);
+    if (!pb) return;
+    const reach = Math.hypot(W, H) * 2;
+    const sa = worldToScreen(pb.A);
+    ctx.save();
+    ctx.strokeStyle = "rgba(249,168,212,.45)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(sa.x - pb.u.x * reach, sa.y + pb.u.y * reach);
+    ctx.lineTo(sa.x + pb.u.x * reach, sa.y - pb.u.y * reach);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = pal("parabola");
+    ctx.lineWidth = selectedId === o.id ? 4 : 2.5;
+    ctx.beginPath();
+    parabolaPoints(pb).forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.stroke();
+    ctx.fillStyle = tint("#fbcfe8");
+    ctx.font = "12px system-ui";
+    ctx.fillText("سهمی", sa.x + 8, sa.y + 16);
+    ctx.restore();
+  }
+
   function draw() {
     if (!canvas.width || !canvas.height) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -761,7 +1212,12 @@
     drawGrid();
 
     for (const o of objects) {
-      if (o.type === "segment" || o.type === "line") drawSegment(o);
+      if (o.type === "segment" || o.type === "line" || o.type === "ray" || o.type === "vector") drawSegment(o);
+      if (o.type === "dirline") drawDirLine(o);
+      if (o.type === "pdist") drawPDist(o);
+      if (o.type === "arc") drawArc(o);
+      if (o.type === "ellipse") drawEllipse(o);
+      if (o.type === "parabola") drawParabola(o);
       if (o.type === "circle") drawCircle(o);
       if (o.type === "polygon") drawPolygon(o);
       if (o.type === "angle") drawAngle(o);
@@ -833,6 +1289,50 @@
       props.textContent = a && b
         ? `فاصلهٔ ${a.label} تا ${b.label} · ${fmt(dist(a, b))} واحد`
         : "اندازه‌گیری فاصله";
+    } else if (o.type === "dirline") {
+      const a = getPoint(o.a), b = getPoint(o.b), p = getPoint(o.p);
+      props.textContent = a && b && p
+        ? `${o.perp ? "خط عمود" : "خط موازی"} از ${p.label} · جهت ${a.label}${b.label}`
+        : "خط";
+    } else if (o.type === "ray") {
+      const a = getPoint(o.a), b = getPoint(o.b);
+      props.textContent = a && b ? `نیم‌خط از ${a.label} به سوی ${b.label}` : "نیم‌خط";
+    } else if (o.type === "vector") {
+      const a = getPoint(o.a), b = getPoint(o.b);
+      props.textContent = a && b
+        ? `بردار ${a.label}${b.label} · طول: ${fmt(dist(a, b))} واحد · مؤلفه‌ها: (${fmt(b.x - a.x)}, ${fmt(b.y - a.y)})`
+        : "بردار";
+    } else if (o.type === "pdist") {
+      const P = getPoint(o.p), A = getPoint(o.a), B = getPoint(o.b);
+      const F = P && A && B ? footWorld(P, A, B) : null;
+      props.textContent = F
+        ? `فاصلهٔ ${P.label} از خط ${A.label}${B.label} · ${fmt(dist(P, F))} واحد`
+        : "فاصله از خط";
+    } else if (o.type === "arc") {
+      const s = arcSpec(o);
+      if (!s) {
+        props.textContent = "کمان";
+      } else {
+        const deg = fmt(s.sweep * 180 / Math.PI);
+        if (o.sector) {
+          props.textContent = `قطاع · شعاع: ${fmt(s.r)} · زاویه: ${deg}° · مساحت: ${fmt(s.r * s.r * s.sweep / 2)}`;
+        } else if (o.b == null) {
+          props.textContent = `نیم‌دایره · شعاع: ${fmt(s.r)} · محیط: ${fmt(Math.PI * s.r + 2 * s.r)} · مساحت: ${fmt(Math.PI * s.r * s.r / 2)}`;
+        } else {
+          props.textContent = `کمان · شعاع: ${fmt(s.r)} · زاویه: ${deg}° · طول کمان: ${fmt(s.r * s.sweep)}`;
+        }
+      }
+    } else if (o.type === "ellipse") {
+      const e = ellipseSpec(o);
+      props.textContent = e
+        ? `بیضی · نیم‌محور بزرگ a: ${fmt(e.a)} · نیم‌محور کوچک b: ${fmt(e.b)} · مساحت: ${fmt(Math.PI * e.a * e.b)}`
+        : "بیضی";
+    } else if (o.type === "parabola") {
+      const pb = parabolaSpec(o);
+      const F = getPoint(o.f), A = getPoint(o.a), B = getPoint(o.b);
+      props.textContent = pb && F && A && B
+        ? `سهمی · کانون ${F.label} · خط هادی ${A.label}${B.label} · فاصلهٔ کانون تا هادی: ${fmt(Math.abs(pb.f))}`
+        : "سهمی";
     } else if (o.type === "angle") {
       const degrees = angleDegrees(o);
       props.textContent = degrees === null
@@ -847,6 +1347,7 @@
     tool = next;
     pending = [];
     polygonIds = [];
+    pickedId = null;
 
     document.querySelectorAll("[data-tool]").forEach(button =>
       button.classList.toggle("active", button.dataset.tool === tool));
@@ -865,11 +1366,36 @@
       stroke: "با موس یا انگشت روی بوم بکش؛ با رها کردن، خط دست‌آزاد ثبت می‌شود.",
       measure: "دو نقطه را انتخاب کن تا فاصلهٔ آن‌ها روی بوم نوشته شود.",
       intersect: "دو نقطه برای خط اول و دو نقطه برای خط دوم انتخاب کن؛ محل تقاطع ساخته می‌شود.",
-      foot: "اول نقطهٔ P، سپس دو سر خط A و B را انتخاب کن تا پای عمود از P بر AB ساخته شود."
+      foot: "اول نقطهٔ P، سپس دو سر خط A و B را انتخاب کن تا پای عمود از P بر AB ساخته شود.",
+      parallel: "اول نقطهٔ عبور خط را بزن، سپس دو نقطهٔ A و B را برای جهت انتخاب کن تا خط موازی AB از آن نقطه رسم شود.",
+      perpline: "اول نقطهٔ عبور خط را بزن، سپس دو نقطهٔ A و B را انتخاب کن تا خط عمود بر AB از آن نقطه رسم شود.",
+      ray: "دو نقطه را انتخاب کن: نقطهٔ شروع و نقطهٔ دوم. نیم‌خط از نقطهٔ اول به سوی نقطهٔ دوم ادامه پیدا می‌کند.",
+      vector: "دو نقطه را انتخاب کن: ابتدا و انتهای بردار.",
+      pdist: "سه نقطه را انتخاب کن: اول P، سپس دو نقطهٔ A و B روی خط. فاصلهٔ عمودی P تا خط AB نشان داده می‌شود.",
+      circle3: "سه نقطهٔ روی محیط دایره را انتخاب کن تا دایرهٔ گذرنده از آن‌ها ساخته شود.",
+      circleRad: "مرکز دایره را کلیک کن. شعاع از کادر «عدد ورودی» خوانده می‌شود.",
+      compass: "دو نقطهٔ A و B فاصلهٔ پرگار را تعیین می‌کنند؛ سپس مرکز C را بزن تا دایرهٔ به شعاع AB روی C رسم شود.",
+      tangent: "اول نقطهٔ P بیرون دایره را انتخاب کن، سپس روی خود دایره کلیک کن تا دو مماس از P رسم شوند.",
+      arc3: "سه نقطه را انتخاب کن: ابتدای کمان، نقطه‌ای که کمان از آن می‌گذرد، و انتهای کمان.",
+      semicircle: "دو سر قطر را انتخاب کن. نیم‌دایره در سمت چپ جهت حرکت از نقطهٔ اول به نقطهٔ دوم رسم می‌شود.",
+      sector: "اول مرکز، سپس نقطهٔ شروع و نقطهٔ پایان را انتخاب کن. قطاع در خلاف جهت عقربه‌های ساعت از شروع تا پایان ساخته می‌شود.",
+      regular: "دو رأس اول ضلع (A و B) را انتخاب کن. تعداد ضلع‌ها از کادر «عدد ورودی» خوانده می‌شود (۳ تا ۲۴).",
+      angleGiven: "اول نقطهٔ روی ضلع اول، سپس رأس زاویه را انتخاب کن. اندازهٔ زاویه (بین ۰ تا ۱۸۰ درجه) از کادر عدد خوانده می‌شود.",
+      translate: "اول شکل یا نقطه را بزن، سپس دو نقطه برای بردار انتقال انتخاب کن تا تصویر شکل ساخته شود.",
+      rotate: "اول شکل یا نقطه را بزن، سپس مرکز چرخش را انتخاب کن. زاویه از کادر عدد خوانده می‌شود.",
+      reflectline: "اول شکل یا نقطه را بزن، سپس دو نقطه برای خط تقارن انتخاب کن.",
+      reflectpt: "اول شکل یا نقطه را بزن، سپس نقطهٔ تقارن را انتخاب کن.",
+      dilate: "اول شکل یا نقطه را بزن، سپس مرکز تجانس را انتخاب کن. ضریب از کادر عدد خوانده می‌شود؛ مثلاً ۲ یعنی دو برابر.",
+      ellipse: "سه نقطه را انتخاب کن: دو کانون F1 و F2 و سپس نقطه‌ای روی بیضی.",
+      parabola: "سه نقطه را انتخاب کن: کانون F، و دو نقطهٔ A و B که خط هادی از آن‌ها می‌گذرد."
     };
 
     help.textContent = instructions[tool] || "";
-    say("ابزار انتخاب‌شده: " + (toolNames[tool] || tool));
+    const paramInput = $("paramIn"), paramLabel = $("paramLabel");
+    if (paramLabel) paramLabel.textContent = paramLabels[tool] || "عدد ورودی";
+    if (paramInput && paramDefaults[tool]) paramInput.value = paramDefaults[tool];
+    const buttonLabel = document.querySelector(`[data-tool="${tool}"] span`)?.textContent;
+    say("ابزار انتخاب‌شده: " + (toolNames[tool] || buttonLabel || tool));
     draw();
   }
 
@@ -877,8 +1403,15 @@
     switch (o.type) {
       case "segment":
       case "line":
+      case "ray":
+      case "vector":
       case "measure":
       case "perpbis": return o.a === id || o.b === id;
+      case "dirline":
+      case "pdist": return o.p === id || o.a === id || o.b === id;
+      case "arc": return o.center === id || o.a === id || o.c === id || o.b === id;
+      case "ellipse": return o.f1 === id || o.f2 === id || o.p === id;
+      case "parabola": return o.f === id || o.a === id || o.b === id;
       case "circle": return o.center === id || o.through === id || (o.inradius ? o.inradius.includes(id) : false);
       case "point": return !!o.dep && o.dep.of.includes(id);
       case "polygon": return o.points.includes(id);
@@ -938,10 +1471,14 @@
   function movableOf(o) {
     let ids = [];
     switch (o.type) {
-      case "segment": case "line": case "measure": case "perpbis": ids = [o.a, o.b]; break;
+      case "segment": case "line": case "measure": case "perpbis": case "ray": case "vector": ids = [o.a, o.b]; break;
       case "circle": ids = [o.center, o.through]; break;
       case "angle": case "bisector": ids = [o.a, o.vertex, o.c]; break;
       case "polygon": ids = o.points; break;
+      case "dirline": case "pdist": ids = [o.p, o.a, o.b]; break;
+      case "arc": ids = [o.center, o.a, o.c, o.b]; break;
+      case "ellipse": ids = [o.f1, o.f2, o.p]; break;
+      case "parabola": ids = [o.f, o.a, o.b]; break;
     }
     const points = [...new Set(ids)].map(getPoint).filter(p => p && !p.dep);
     return { points, pts: o.type === "stroke" ? o.pts : [] };
@@ -1025,6 +1562,7 @@
   function handleClick(x, y) {
     const p = snapPoint(screenToWorld(x, y));
     const hit = hitPoint(x, y);
+    if (handleNewTool(x, y, p, hit)) return;
 
     if (tool === "point") {
       createPoint(p);
@@ -1180,6 +1718,409 @@
         say(`نقطهٔ ${pending.length} از ۳ را انتخاب کن.`);
       }
     }
+  }
+
+  /* ---------- ابزارهای جدید (الگوی GeoGebra) ---------- */
+
+  const transformTools = ["translate", "rotate", "reflectline", "reflectpt", "dilate"];
+
+  // ساخت تصویر یک شکل (یا نقطه) با تبدیل داده‌شده؛ نقطه‌های تصویر وابسته به اصل‌اند
+  // و با جابه‌جایی اصل، خودشان هم جابه‌جا می‌شوند. داخل transact صدا زده می‌شود.
+  function makeImage(kind, extraIds, par) {
+    const obj = objects.find(o => o.id === pickedId);
+    if (!obj) return;
+    const copyable = obj.type === "point" || (COPYABLE.includes(obj.type) && !obj.inradius);
+    if (!copyable) {
+      say("این نوع شکل را نمی‌توان تبدیل کرد.");
+      pickedId = null;
+      return;
+    }
+    const srcIds = obj.type === "point" ? [obj.id] : refIds(obj);
+    const extra = extraIds.map(getPoint);
+    for (const id of srcIds) {
+      const q = transformCoords({ kind, par }, [getPoint(id), ...extra]);
+      if (!q || !inBoard(q)) {
+        say("این تبدیل شکل را از بوم بیرون می‌برد.");
+        return;
+      }
+    }
+
+    const map = new Map();
+    for (const id of srcIds) {
+      const src = getPoint(id);
+      const img = addDerivedPoint(kind, src.label + "′", [id, ...extraIds], { par });
+      map.set(id, img.id);
+    }
+    if (obj.type !== "point") {
+      const data = copyShape(obj, id => map.get(id));
+      if (data) addObject(data);
+    }
+    pickedId = null;
+    const names = { translate: "انتقال یافت", rotate: "چرخید", reflectline: "نسبت به خط قرینه شد",
+      reflectpt: "نسبت به نقطه قرینه شد", dilate: "تجانس یافت" };
+    say(`تصویر ساخته شد: شکل ${names[kind] || "تبدیل شد"}.`);
+  }
+
+  // کلیک‌های ابزارهای تبدیل: اول شکل، سپس نقطه‌ها یا عدد ورودی
+  function transformClick(x, y, p, hit) {
+    if (!pickedId) {
+      const shape = hit || hitShape(x, y);
+      if (!shape) {
+        say("اول روی شکل یا نقطه‌ای کلیک کن که می‌خواهی تبدیل شود.");
+        return;
+      }
+      pickedId = shape.id;
+      pending = [];
+      const first = {
+        translate: "حالا دو نقطه برای بردار انتقال انتخاب کن.",
+        rotate: "حالا مرکز چرخش را انتخاب کن.",
+        reflectline: "حالا دو نقطهٔ خط تقارن را انتخاب کن.",
+        reflectpt: "حالا نقطهٔ تقارن را انتخاب کن.",
+        dilate: "حالا مرکز تجانس را انتخاب کن."
+      };
+      say(first[tool]);
+      return;
+    }
+
+    if (!objects.find(o => o.id === pickedId)) {
+      pickedId = null;
+      pending = [];
+      say("شکل انتخاب‌شده دیگر وجود ندارد؛ دوباره انتخابش کن.");
+      return;
+    }
+
+    let par = 0;
+    if (tool === "rotate" || tool === "dilate") {
+      par = readParam();
+      if (par === null || (tool === "dilate" && par === 0)) {
+        say(tool === "rotate" ? "زاویهٔ چرخش را در کادر عدد وارد کن." : "ضریب تجانس باید عددی غیرصفر باشد.");
+        return;
+      }
+    }
+
+    const needed = tool === "translate" || tool === "reflectline" ? 2 : 1;
+    pending.push(hit || createPoint(p));
+    if (pending.length < needed) {
+      say(tool === "translate" ? "حالا نقطهٔ دوم بردار را انتخاب کن." : "حالا نقطهٔ دوم خط تقارن را انتخاب کن.");
+      return;
+    }
+    const pts = pending;
+    pending = [];
+
+    if (tool === "translate" || tool === "reflectline") {
+      if (pts[0].id === pts[1].id) {
+        say("دو نقطهٔ متفاوت انتخاب کن.");
+        return;
+      }
+      makeImage(tool, pts.map(q => q.id), 0);
+    } else if (tool === "rotate") {
+      makeImage("rotate", [pts[0].id], par);
+    } else if (tool === "reflectpt") {
+      makeImage("reflectpt", [pts[0].id], 0);
+    } else {
+      makeImage("dilate", [pts[0].id], par);
+    }
+  }
+
+  // ابزارهای جدید؛ اگر ابزار جاری یکی از آن‌ها بود true برمی‌گرداند
+  function handleNewTool(x, y, p, hit) {
+    if (transformTools.includes(tool)) {
+      transformClick(x, y, p, hit);
+      return true;
+    }
+
+    switch (tool) {
+      case "parallel":
+      case "perpline": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 3) {
+          say(pending.length === 1 ? "حالا دو نقطهٔ A و B را برای جهت خط انتخاب کن." : "حالا نقطهٔ دوم جهت (B) را انتخاب کن.");
+          return true;
+        }
+        const [P, A, B] = pending;
+        pending = [];
+        if (A.id === B.id) {
+          say("دو نقطهٔ A و B باید متفاوت باشند.");
+          return true;
+        }
+        addObject({ type: "dirline", p: P.id, a: A.id, b: B.id, perp: tool === "perpline" });
+        say(tool === "perpline" ? "خط عمود رسم شد." : "خط موازی رسم شد.");
+        return true;
+      }
+
+      case "ray":
+      case "vector": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 2) {
+          say("حالا نقطهٔ دوم را انتخاب کن.");
+          return true;
+        }
+        const [a, b] = pending;
+        pending = [];
+        if (a.id === b.id) {
+          say("دو نقطهٔ متفاوت انتخاب کن.");
+          return true;
+        }
+        addObject({ type: tool, a: a.id, b: b.id });
+        say(tool === "ray" ? "نیم‌خط رسم شد." : "بردار رسم شد.");
+        return true;
+      }
+
+      case "pdist": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 3) {
+          say(pending.length === 1 ? "حالا دو نقطهٔ خط را انتخاب کن." : "حالا نقطهٔ دوم خط را انتخاب کن.");
+          return true;
+        }
+        const [P, A, B] = pending;
+        pending = [];
+        if (A.id === B.id) {
+          say("دو نقطهٔ خط باید متفاوت باشند.");
+          return true;
+        }
+        addObject({ type: "pdist", p: P.id, a: A.id, b: B.id });
+        say(`فاصلهٔ ${P.label} از خط ${A.label}${B.label} نشان داده شد.`);
+        return true;
+      }
+
+      case "circle3":
+      case "arc3": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 3) {
+          say(`نقطهٔ ${pending.length + 1} از ۳ را انتخاب کن.`);
+          return true;
+        }
+        const [A, B, C] = pending;
+        pending = [];
+        const center = circumcenter(A, B, C);
+        if (!center) {
+          say("این سه نقطه روی یک خط‌اند؛ دایره یا کمانی از آن‌ها ساخته نمی‌شود.");
+          return true;
+        }
+        if (!inBoard(center)) {
+          say("مرکز این دایره بیرون از بوم است.");
+          return true;
+        }
+        const O = addDerivedPoint("circumcenter", "O", [A.id, B.id, C.id]);
+        if (tool === "circle3") {
+          addObject({ type: "circle", name: "دایرهٔ گذرنده از سه نقطه", center: O.id, through: A.id, radius: 0 });
+          say("دایره از سه نقطه ساخته شد.");
+        } else {
+          addObject({ type: "arc", center: O.id, a: A.id, b: B.id, c: C.id, sector: false });
+          say("کمان از سه نقطه ساخته شد.");
+        }
+        return true;
+      }
+
+      case "circleRad": {
+        const r = readParam();
+        if (r === null || r <= 0 || r > LIMIT) {
+          say(`شعاع باید عددی مثبت و کوچک‌تر از ${LIMIT} باشد.`);
+          return true;
+        }
+        const base = hit || p;
+        if (!inBoard({ x: base.x + r, y: base.y })) {
+          say("این دایره بیرون از بوم می‌افتد؛ مرکز را داخل بوم یا شعاع را کوچک‌تر کن.");
+          return true;
+        }
+        const c = hit || createPoint(p);
+        const edge = createPoint({ x: c.x + r, y: c.y });
+        addObject({ type: "circle", center: c.id, through: edge.id, radius: r });
+        say(`دایره با شعاع ${fmt(r)} ساخته شد.`);
+        return true;
+      }
+
+      case "compass": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 3) {
+          say(pending.length === 1 ? "حالا نقطهٔ دوم فاصله را انتخاب کن." : "حالا مرکز دایره را انتخاب کن.");
+          return true;
+        }
+        const [A, B, C] = pending;
+        pending = [];
+        if (A.id === B.id) {
+          say("دو نقطهٔ فاصله باید متفاوت باشند.");
+          return true;
+        }
+        if (!inBoard({ x: C.x + B.x - A.x, y: C.y + B.y - A.y })) {
+          say("این دایره بیرون از بوم می‌افتد؛ مرکز یا فاصله را تغییر بده.");
+          return true;
+        }
+        const Q = addDerivedPoint("translate", "Q", [C.id, A.id, B.id]);
+        addObject({ type: "circle", center: C.id, through: Q.id, radius: dist(A, B) });
+        say("پرگار: دایره‌ای به شعاع فاصلهٔ AB ساخته شد.");
+        return true;
+      }
+
+      case "tangent": {
+        if (!pending.length) {
+          pending.push(hit || createPoint(p));
+          say("حالا روی خود دایره کلیک کن.");
+          return true;
+        }
+        const P = pending[0];
+        const shape = hitShape(x, y);
+        if (!shape || shape.type !== "circle") {
+          say("روی یک دایره کلیک کن.");
+          return true;
+        }
+        pending = [];
+        if (shape.inradius || shape.through == null) {
+          say("این دایره برای رسم مماس مناسب نیست.");
+          return true;
+        }
+        const O = getPoint(shape.center), A = getPoint(shape.through);
+        if (dist(P, O) <= dist(O, A) + 1e-9) {
+          say("نقطهٔ P باید بیرون دایره باشد.");
+          return true;
+        }
+        const dep = { kind: "tangent", k: 0 };
+        const q0 = transformCoords(dep, [P, O, A]);
+        const q1 = transformCoords({ kind: "tangent", k: 1 }, [P, O, A]);
+        if (!q0 || !q1 || !inBoard(q0) || !inBoard(q1)) {
+          say("نقطهٔ تماس بیرون از بوم می‌افتد.");
+          return true;
+        }
+        const t1 = addDerivedPoint("tangent", nextLabel(), [P.id, O.id, A.id], { k: 0 });
+        const t2 = addDerivedPoint("tangent", nextLabel(), [P.id, O.id, A.id], { k: 1 });
+        addObject({ type: "line", name: "مماس بر دایره", a: P.id, b: t1.id });
+        addObject({ type: "line", name: "مماس بر دایره", a: P.id, b: t2.id });
+        say("دو مماس از نقطه بر دایره رسم شد.");
+        return true;
+      }
+
+      case "semicircle": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 2) {
+          say("حالا نقطهٔ دوم قطر را انتخاب کن.");
+          return true;
+        }
+        const [A, C] = pending;
+        pending = [];
+        if (A.id === C.id) {
+          say("دو سر قطر باید متفاوت باشند.");
+          return true;
+        }
+        const M = addDerivedPoint("midpoint", "M", [A.id, C.id]);
+        addObject({ type: "arc", center: M.id, a: A.id, c: C.id, b: null, sector: false });
+        say("نیم‌دایره ساخته شد.");
+        return true;
+      }
+
+      case "sector": {
+        pending.push(hit || createPoint(p));
+        if (pending.length < 3) {
+          say(pending.length === 1 ? "حالا نقطهٔ شروع کمان را انتخاب کن." : "حالا نقطهٔ پایان کمان را انتخاب کن.");
+          return true;
+        }
+        const [O, A, B] = pending;
+        pending = [];
+        if (dist(O, A) < 1e-9 || A.id === O.id || B.id === O.id) {
+          say("نقطهٔ شروع باید با مرکز فرق داشته باشد.");
+          return true;
+        }
+        addObject({ type: "arc", center: O.id, a: A.id, c: B.id, b: null, sector: true });
+        say("قطاع دایره ساخته شد.");
+        return true;
+      }
+
+      case "regular": {
+        const n = readParam();
+        if (n === null || !Number.isInteger(n) || n < 3 || n > 24) {
+          say("تعداد ضلع‌ها باید عدد صحیح بین ۳ و ۲۴ باشد.");
+          return true;
+        }
+        pending.push(hit || createPoint(p));
+        if (pending.length < 2) {
+          say("حالا نقطهٔ دوم ضلع را انتخاب کن.");
+          return true;
+        }
+        const [A, B] = pending;
+        pending = [];
+        if (A.id === B.id) {
+          say("دو رأس ضلع باید متفاوت باشند.");
+          return true;
+        }
+        for (let k = 2; k < n; k++) {
+          const q = transformCoords({ kind: "regular", par: n, k }, [A, B]);
+          if (!q || !inBoard(q)) {
+            say("این چندضلعی بیرون از بوم می‌افتد؛ ضلع کوچک‌تری انتخاب کن.");
+            return true;
+          }
+        }
+        const ids = [A.id, B.id];
+        for (let k = 2; k < n; k++) {
+          ids.push(addDerivedPoint("regular", nextLabel(), [A.id, B.id], { par: n, k }).id);
+        }
+        addObject({ type: "polygon", points: ids });
+        say(`چندضلعی منتظم ${n} ضلعی ساخته شد.`);
+        return true;
+      }
+
+      case "angleGiven": {
+        const th = readParam();
+        if (th === null || th <= 0 || th >= 180) {
+          say("اندازهٔ زاویه باید بین ۰ و ۱۸۰ درجه باشد.");
+          return true;
+        }
+        pending.push(hit || createPoint(p));
+        if (pending.length < 2) {
+          say("حالا رأس زاویه را انتخاب کن.");
+          return true;
+        }
+        const [A, V] = pending;
+        pending = [];
+        if (A.id === V.id) {
+          say("نقطهٔ ضلع و رأس باید متفاوت باشند.");
+          return true;
+        }
+        const q = transformCoords({ kind: "rotate", par: th }, [A, V]);
+        if (!q || !inBoard(q)) {
+          say("زاویهٔ ساخته‌شده بیرون از بوم می‌افتد.");
+          return true;
+        }
+        const B = addDerivedPoint("rotate", nextLabel(), [A.id, V.id], { par: th });
+        addObject({ type: "angle", a: A.id, vertex: V.id, c: B.id });
+        say(`زاویهٔ ${fmt(th)} درجه ساخته شد.`);
+        return true;
+      }
+
+      case "ellipse":
+      case "parabola": {
+        pending.push(hit || createPoint(p));
+        const need = 3;
+        if (pending.length < need) {
+          const ask = tool === "ellipse"
+            ? ["حالا کانون دوم F2 را انتخاب کن.", "حالا نقطه‌ای روی بیضی را انتخاب کن."]
+            : ["حالا یکی از دو نقطهٔ خط هادی را انتخاب کن.", "حالا نقطهٔ دوم خط هادی را انتخاب کن."];
+          say(ask[pending.length - 1]);
+          return true;
+        }
+        const [X, Y, Z] = pending;
+        pending = [];
+        if (tool === "ellipse") {
+          if (X.id === Y.id || dist(X, Y) < 1e-9) {
+            say("دو کانون باید متفاوت باشند.");
+            return true;
+          }
+          addObject({ type: "ellipse", f1: X.id, f2: Y.id, p: Z.id });
+          say("بیضی ساخته شد.");
+        } else {
+          if (Y.id === Z.id || dist(Y, Z) < 1e-9) {
+            say("دو نقطهٔ خط هادی باید متفاوت باشند.");
+            return true;
+          }
+          if (Math.abs((X.x - Y.x) * (Z.y - Y.y) - (X.y - Y.y) * (Z.x - Y.x)) / dist(Y, Z) < 1e-6) {
+            say("کانون نباید روی خط هادی باشد.");
+            return true;
+          }
+          addObject({ type: "parabola", f: X.id, a: Y.id, b: Z.id });
+          say("سهمی ساخته شد.");
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   /* ---------- زوم دو انگشتی (لمسی) ---------- */
@@ -1458,6 +2399,7 @@
     }
     if (event.key === "Escape") {
       pending = [];
+      pickedId = null;
       strokeDraw = null;
       polygonIds = [];
       say("عملیات جاری لغو شد.");
