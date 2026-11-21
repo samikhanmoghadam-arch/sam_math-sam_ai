@@ -44,6 +44,7 @@
       topic ? `موضوع سؤال‌ها: ${topic}. هر سؤال زاویه یا نوع متفاوتی از این موضوع داشته باشد.` : `نوع سؤال‌ها: ${hint}.`,
       `این ${size} سؤال بخشی از یک آزمون ${count} سؤالی‌اند؛ پس با بقیهٔ آزمون تکراری نباشند.`,
       avoid.length ? `این سؤال‌ها قبلاً ساخته شده‌اند و نباید تکرار شوند: ${avoid.map(q => '«' + q.slice(0, 90) + '»').join('، ')}.` : '',
+      'در متن سؤال‌ها و گزینه‌ها از $ و LaTeX استفاده نکن؛ توان را مثل x² و کسر را مثل ۱/۲ یا (a+b)/c بنویس.',
       'سؤال‌ها باید از نظر علمی درست، متناسب با سطح این پایه و دارای فقط یک پاسخ صحیح باشند.',
       `فقط یک شیء JSON معتبر برگردان؛ بدون هیچ متن، توضیح یا علامت اضافه، با دقیقاً ${size} سؤال و این ساختار:`,
       '{"questions":[{"question":"متن سؤال","options":["گزینهٔ ۱","گزینهٔ ۲","گزینهٔ ۳","گزینهٔ ۴"],"answer":0,"explanation":"توضیح کوتاه حل"}]}',
@@ -160,7 +161,7 @@
       title.textContent = `سؤال ${faNum(i + 1)}`;
       const text = document.createElement('p');
       text.className = 'exam-text';
-      text.textContent = q.question;
+      text.textContent = samPlain(q.question);
       const list = document.createElement('div');
       list.className = 'exam-options';
       q.options.forEach((option, j) => {
@@ -171,7 +172,7 @@
         radio.name = `examQ${i}`;
         radio.value = String(j);
         const span = document.createElement('span');
-        span.textContent = `${LETTERS[j]}) ${option}`;
+        span.textContent = samPlain(`${LETTERS[j]}) ${option}`);
         label.append(radio, span);
         list.appendChild(label);
       });
@@ -199,7 +200,7 @@
       const verdict = picked < 0 ? 'بی‌پاسخ ماند.' : correct ? 'درست ✔' : 'نادرست ✘';
       let text = `${verdict} پاسخ درست: ${LETTERS[q.answer]}) ${q.options[q.answer]}`;
       if (q.explanation) text += `\nتوضیح: ${q.explanation}`;
-      feedback.textContent = text;
+      feedback.textContent = samPlain(text);
       feedback.className = `exam-feedback ${picked < 0 ? 'skip' : correct ? 'good' : 'bad'}`;
       feedback.hidden = false;
     });

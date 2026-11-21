@@ -167,7 +167,7 @@
       bubble.appendChild(label);
     }
     const p = document.createElement('p');
-    p.textContent = text;
+    p.textContent = role === 'assistant' && window.samPlain ? window.samPlain(text) : text;
     p.style.whiteSpace = 'pre-wrap';
     p.style.overflowWrap = 'anywhere';
     if (thinking) p.className = 'thinking';
@@ -320,7 +320,7 @@
       }
 
       const answer = cleanAnswer(data.answer);
-      pending.p.textContent = answer;
+      pending.p.textContent = window.samPlain ? window.samPlain(answer) : answer;
       pending.p.classList.remove('thinking');
       renderSources(pending.article, data.sources);
       if (typeof data.image === 'string' && data.image.startsWith('data:image/')) {
