@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#090d1d">
-  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="icons/favicon-32.png?v=3" sizes="32x32" type="image/png"><link rel="icon" href="icons/favicon-48.png?v=3" sizes="48x48" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=3">
   <link rel="manifest" href="manifest.json">
   <title>SAM MATH | چک‌نویس هوشمند</title>
   <link rel="stylesheet" href="style.css">
@@ -41,6 +41,8 @@
         <button type="button" id="skRedo" title="جلو">↷</button>
         <button type="button" id="skClear" class="danger" title="پاک‌کردن تخته">🧹 پاک‌کردن</button>
         <button type="button" id="skSave" title="ذخیرهٔ تصویر">💾 ذخیره</button>
+        <label class="sk-upload-btn" for="skImageUpload">🖼 افزودن عکس یا سؤال</label>
+        <input id="skImageUpload" type="file" accept="image/*" hidden>
       </div>
 
       <div class="sk-board" id="skBoard">

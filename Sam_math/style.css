@@ -147,3 +147,9 @@ input:focus, textarea:focus, select:focus { outline:2px solid rgba(103,232,249,.
   body::before, body::after { animation:none; }
   *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; }
 }
+
+
+/* SAM MATH brand watermark */
+.math-universe:after{content:"";position:absolute;z-index:0;left:50%;top:50%;width:min(48vw,520px);aspect-ratio:1;transform:translate(-50%,-50%);background:url("sam-math-logo.png") center/contain no-repeat;opacity:.055;mix-blend-mode:screen;pointer-events:none}
+.math-universe .scholar{z-index:1}
+@media(max-width:700px){.math-universe:after{width:min(76vw,360px);opacity:.045}}

@@ -54,8 +54,8 @@ Worker (cloudflare-sam-ai/src/index.js)
 مرحلهٔ ۳ — انتشار دوباره
     npx wrangler deploy
 
-کلید جست‌وجو (LANGSEARCH_API_KEY) از قبل تنظیم شده است و لازم نیست دوباره وارد شود. اگر پاک شده بود:
-    npx wrangler secret put LANGSEARCH_API_KEY
+کلید جست‌وجو (SERPER_API_KEY) از قبل تنظیم شده است و لازم نیست دوباره وارد شود. اگر پاک شده بود:
+    npx wrangler secret put SERPER_API_KEY
 
 مرحلهٔ ۴ — تست
 - index.html را باز کن؛ اسمت را بنویس؛ چند محاسبه انجام بده و در تاریخچه ببین.

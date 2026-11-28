@@ -1,6 +1,6 @@
 ﻿// SAM AI backend (Cloudflare Worker)
 // - Ú¯ÙØªâ€ŒÙˆÚ¯Ùˆ: Workers AI Ø¨Ø§ Ù…Ø¯Ù„ Gemma (Ø§Ø² binding Ø¨Ø§ Ù†Ø§Ù… AIØ› Ù†ÛŒØ§Ø² Ø¨Ù‡ Ú©Ù„ÛŒØ¯ Ø¬Ø¯Ø§Ú¯Ø§Ù†Ù‡ Ù†Ø¯Ø§Ø±Ø¯)
-// - Ø¬Ø³Øªâ€ŒÙˆØ¬ÙˆÛŒ ÙˆØ¨: LangSearchØ› Ú©Ù„ÛŒØ¯ Ø¯Ø± secret Ø¨Ø§ Ù†Ø§Ù… LANGSEARCH_API_KEY
+// - جست‌وجوی وب: Serper (گوگل)؛ کلید در secret با نام SERPER_API_KEY
 // - Ø³Ø§Ø®Øª ØªØµÙˆÛŒØ±: Workers AI Ø¨Ø§ Ù…Ø¯Ù„ FLUX (Ù‡Ù…Ø§Ù† bindingØ› Ø¨Ø¯ÙˆÙ† Ú©Ù„ÛŒØ¯ Ø¬Ø¯Ø§Ú¯Ø§Ù†Ù‡)
 
 const CHAT_MODEL = "@cf/google/gemma-4-26b-a4b-it";
@@ -139,31 +139,31 @@ function cleanSite(value) {
 }
 
 async function webSearch(env, query, site) {
-  if (!env.LANGSEARCH_API_KEY) {
+  if (!env.SERPER_API_KEY) {
     return {
-      error: "Ú©Ù„ÛŒØ¯ Ø¬Ø³Øªâ€ŒÙˆØ¬ÙˆÛŒ ÙˆØ¨ Ø±ÙˆÛŒ Worker ØªÙ†Ø¸ÛŒÙ… Ù†Ø´Ø¯Ù‡ Ø§Ø³Øª. Ø¯Ø± ØªØ±Ù…ÛŒÙ†Ø§Ù„ Ù¾ÙˆØ´Ù‡Ù” cloudflare-sam-ai Ø¯Ø³ØªÙˆØ± npx wrangler secret put LANGSEARCH_API_KEY Ø±Ø§ Ø§Ø¬Ø±Ø§ Ú©Ù†.",
+      error: "کلید Serper روی Worker تنظیم نشده است. در ترمینال پوشهٔ cloudflare-sam-ai دستور npx wrangler secret put SERPER_API_KEY را اجرا کن.",
       status: 503
     };
   }
-  // LangSearch Ø§Ø² Ù¾Ø§Ø±Ø§Ù…ØªØ± site: Ø¯Ø± Ø®ÙˆØ¯ Ù…ØªÙ† Ø¬Ø³Øªâ€ŒÙˆØ¬Ùˆ Ù¾Ø´ØªÛŒØ¨Ø§Ù†ÛŒ Ù…ÛŒâ€ŒÚ©Ù†Ø¯
+  // Serper (موتور جست‌وجوی گوگل) از اپراتور site: داخل متن جست‌وجو پشتیبانی می‌کند
   const q = (site ? `site:${site} ` : "") + query.slice(0, 380);
-  const res = await fetch("https://api.langsearch.com/v1/web-search", {
+  const res = await fetch("https://google.serper.dev/search", {
     method: "POST",
-    headers: { "Authorization": `Bearer ${env.LANGSEARCH_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query: q, count: 5 }),
+    headers: { "X-API-KEY": env.SERPER_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ q, num: 5 }),
     signal: AbortSignal.timeout(20000)
   });
   if (!res.ok) {
-    return { error: `Ø¬Ø³Øªâ€ŒÙˆØ¬ÙˆÛŒ ÙˆØ¨ Ù†Ø§Ù…ÙˆÙÙ‚ Ø¨ÙˆØ¯ (HTTP ${res.status}). Ú©Ù„ÛŒØ¯ LangSearch Ùˆ Ø§Ø¹ØªØ¨Ø§Ø± Ø­Ø³Ø§Ø¨ Ø±Ø§ Ø¯Ø± Ø³Ø§ÛŒØª LangSearch Ø¨Ø±Ø±Ø³ÛŒ Ú©Ù†.`, status: 502 };
+    return { error: `جست‌وجوی وب ناموفق بود (HTTP ${res.status}). کلید Serper و اعتبار حساب را در سایت serper.dev بررسی کن.`, status: 502 };
   }
   const data = await res.json();
-  const pages = Array.isArray(data?.data?.webPages?.value) ? data.data.webPages.value : [];
+  const pages = Array.isArray(data?.organic) ? data.organic : [];
   const results = pages
     .slice(0, 5)
     .map(r => ({
-      title: String(r.name || r.url || "Ù…Ù†Ø¨Ø¹").slice(0, 200),
-      url: String(r.url || ""),
-      content: String(r.snippet || r.summary || r.text || "").slice(0, 700)
+      title: String(r.title || r.link || "منبع").slice(0, 200),
+      url: String(r.link || ""),
+      content: String(r.snippet || "").slice(0, 700)
     }))
     .filter(r => /^https?:\/\//.test(r.url));
   return { results };

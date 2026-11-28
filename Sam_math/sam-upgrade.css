@@ -1,0 +1,58 @@
+
+/* SAM MATH upgrade pack */
+.calc-modebar,.profile-edit,.arcade-suite{margin:18px 0;padding:16px;border:1px solid rgba(115,150,220,.25);border-radius:20px;background:rgba(18,31,61,.55)}
+.calc-modebar label,.profile-edit label,.sudoku-controls label{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-weight:800}
+.calc-modebar select,.calc-extra-grid input,.calc-extra-grid select,.profile-edit input,.sudoku-controls select,.runner-controls input{padding:11px 13px;border:1px solid #6075a7;border-radius:12px;background:#101a32;color:inherit;font:inherit;max-width:100%}
+.calc-extra-grid{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-top:12px}
+.calc-extra-grid label{display:grid;gap:6px}
+.calc-extra-grid .result{flex-basis:100%}
+.profile-edit-row{display:flex;gap:8px;margin-top:8px;max-width:480px}
+.profile-edit-row input{flex:1;min-width:0}
+.arcade-suite h2{margin-top:0}
+.arcade-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.arcade-tab{border:1px solid #536b9a;border-radius:14px;padding:10px 14px;background:#1b2b50;color:inherit;font:inherit;cursor:pointer}
+.arcade-tab.active{background:#526fe2;color:white}
+.runner-scene{height:210px;position:relative;overflow:hidden;border-radius:18px;background:linear-gradient(#102b55,#263e65 68%,#b4c5dd 68%,#8297b6);margin:12px 0}
+.runner-sky{position:absolute;top:16px;left:25px;color:#fff;font-size:22px}
+.runner-ground{position:absolute;bottom:0;height:5px;background:#26344c;width:100%}
+.runner-dino{position:absolute;bottom:9px;left:14%;font-size:48px;z-index:2}
+.runner-obstacle{position:absolute;bottom:12px;right:17%;font-size:38px;color:#ffdc72;font-weight:900}
+.runner-hud{position:absolute;top:12px;right:14px;left:14px;display:flex;justify-content:space-between;color:white;font-weight:900}
+.runner-jump{animation:runnerJump .55s ease}
+@keyframes runnerJump{0%,100%{transform:translateY(0)}45%{transform:translateY(-95px)}}
+.runner-question{font-size:24px;font-weight:900;text-align:center;padding:12px}
+.runner-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.runner-controls input{width:150px}
+.sudoku-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.sudoku-board{display:grid;grid-template-columns:repeat(var(--sudoku-n,9),minmax(25px,48px));gap:2px;justify-content:center;margin:14px auto;padding:5px;background:#667ba9;border-radius:12px;width:max-content;max-width:100%}
+.sudoku-board input{width:clamp(25px,7vw,48px);height:clamp(30px,8vw,48px);text-align:center;border:0;background:#f5f7ff;color:#14213e;font-size:18px;font-weight:800;min-width:0}
+.sudoku-board input:disabled{background:#dbe5fa;color:#18294a}
+.sudoku-board input.sudoku-correct{background:#b8f1d0}.sudoku-board input.sudoku-wrong{background:#ffd1d1}
+body.light .calc-modebar,body.light .profile-edit,body.light .arcade-suite{background:rgba(255,255,255,.85)}
+@media(max-width:600px){.profile-edit-row{flex-direction:column}.runner-scene{height:180px}.runner-question{font-size:20px}}
+
+.profile-title{display:inline-flex;margin:6px 0;padding:8px 14px;border-radius:999px;background:linear-gradient(110deg,#7355d8,#d18d2d);color:white;font-weight:900;box-shadow:0 6px 22px #9c6cbd44}
+.progress-hero .avatar-big{border:3px solid #e8c66b;box-shadow:0 0 28px #e8c66b66;background:radial-gradient(circle at 35% 25%,#fff0ad,#c78b29 68%,#6e4818);color:#fff}
+.badge.on{border:1px solid #e9c56b!important;background:linear-gradient(145deg,rgba(94,69,25,.4),rgba(37,31,61,.8))!important;box-shadow:0 8px 22px #d7a94022}
+.badge.on .badge-icon{font-size:28px;filter:drop-shadow(0 3px 5px #e5bb5c88)}
+.arcade-grade{display:inline-flex;gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:#22385e;margin:6px 0 12px}
+.arcade-grade select{padding:8px;border-radius:9px;background:#101a32;color:inherit;border:1px solid #6075a7}
+
+
+/* Arcade refresh: fast moving dinosaur runner + four new mini-games */
+.runner-scene.runner-running .runner-ground{background:repeating-linear-gradient(90deg,#25344d 0 34px,#52627e 34px 58px);animation:groundScroll .34s linear infinite}
+.runner-scene.runner-running .runner-obstacle{animation:obstacleRun var(--runner-speed,2.3s) linear infinite}
+.runner-scene.runner-running .runner-dino{animation:dinoRun .22s ease-in-out infinite alternate}
+.runner-dino.runner-jump{animation:runnerJump .55s ease!important}
+.runner-dino.runner-bump{filter:brightness(1.8);transform:rotate(-12deg)}
+@keyframes groundScroll{to{background-position:-92px 0}}
+@keyframes obstacleRun{0%{right:-8%;transform:scale(1)}100%{right:108%;transform:scale(1)}}
+@keyframes dinoRun{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-5px) rotate(3deg)}}
+.mini-game-stat{display:inline-flex;padding:9px 15px;border-radius:999px;background:#273e70;font-weight:900;margin:8px 0}
+.mini-game-question{padding:18px;margin:12px 0;border-radius:16px;background:linear-gradient(120deg,rgba(63,99,190,.25),rgba(26,180,177,.18));font-size:clamp(20px,4vw,30px);font-weight:900;text-align:center}
+.mini-game-controls{display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap}
+.mini-game-controls input{max-width:240px;padding:11px 13px;border:1px solid #6075a7;border-radius:12px;background:#101a32;color:inherit;font:inherit}
+.hunt-options,.order-options{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.hunt-option{min-width:76px;padding:13px 20px;border:1px solid #6d8bd2;border-radius:14px;background:#243d70;color:white;font:inherit;font-size:20px;font-weight:900;cursor:pointer}
+.hunt-option:disabled{opacity:.45}
+@media(max-width:600px){.arcade-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.arcade-tab{font-size:.85rem;padding:9px 6px}.mini-game-controls input{width:100%}}

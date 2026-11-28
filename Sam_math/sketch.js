@@ -21,7 +21,7 @@
   const solveBtn = $('skSolve');
   const solveOut = $('skSolveOut');
 
-  let W = 0, H = 0, dpr = 1;
+  let W = 0, H = 0, dpr = 1, boardImage = null;
   let items = [];            // خطوط و متن‌ها (مختصات نرمال‌شده 0..1)
   let undoStack = [], redoStack = [];
   let current = null;        // خط در حال کشیدن
@@ -64,6 +64,11 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#fdfdfb';
     ctx.fillRect(0, 0, W, H);
+    if (boardImage) {
+      const scale = Math.min(W / boardImage.width, H / boardImage.height);
+      const iw = boardImage.width * scale, ih = boardImage.height * scale;
+      ctx.drawImage(boardImage, (W - iw) / 2, (H - ih) / 2, iw, ih);
+    }
     for (const it of items) {
       if (it.type === 'stroke') drawStroke(it);
       else if (it.type === 'text') drawText(it);
@@ -715,4 +720,24 @@
   const savedAi = (() => { try { return localStorage.getItem(AI_KEY) === '1'; } catch (_) { return false; } })();
   setAi(savedAi);
   if (!savedAi) setStatus('حالت آفلاین: تخته و حل محلی کار می‌کنند. خواندن دست‌خط به هوش مصنوعی نیاز دارد.');
+
+  const imageUpload = $('skImageUpload');
+  if (imageUpload) imageUpload.addEventListener('change', () => {
+    const file = imageUpload.files && imageUpload.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setStatus('لطفاً یک فایل تصویری انتخاب کن.', true); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        boardImage = img;
+        redraw();
+        setStatus('تصویر سؤال روی تخته قرار گرفت؛ می‌توانی روی آن بنویسی یا با هوش مصنوعی بررسی‌اش کنی.');
+      };
+      img.onerror = () => setStatus('خواندن تصویر ناموفق بود.', true);
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    imageUpload.value = '';
+  });
 })();

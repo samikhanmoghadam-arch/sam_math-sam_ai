@@ -17,9 +17,9 @@
   const resetButton = $('examReset');
   const LETTERS = ['الف', 'ب', 'ج', 'د'];
   const LETTER_INDEX = { 'الف': 0, 'ب': 1, 'ج': 2, 'د': 3, 'a': 0, 'b': 1, 'c': 2, 'd': 3 };
-  const MIN_Q = 3, MAX_Q = 8;
-  const PER_REQUEST = 2;      // سؤال در هر درخواست: کوتاه‌تر، سریع‌تر و کم‌خطاتر
-  const MAX_ROUNDS = 3;       // دور تکمیل برای جبران سؤال‌های نامعتبر
+  const MIN_Q = 3, MAX_Q = 20;
+  const PER_REQUEST = 4;      // سؤال در هر درخواست: تعداد کمتر درخواست = ساخت سریع‌تر آزمون
+  const MAX_ROUNDS = 4;       // دور تکمیل برای جبران سؤال‌های نامعتبر
   const REQUEST_TIMEOUT = 60000;
   // هر بخش یک زاویهٔ متفاوت می‌گیرد تا سؤال‌های هم‌زمان تکراری نشوند
   const HINTS = [
@@ -140,11 +140,17 @@
         ? `در حال ساختن ${faNum(count)} سؤال در ${faNum(sizes.length)} بخش همزمان با هوش مصنوعی… چند ثانیه صبر کن.`
         : `${faNum(pool.length)} سؤال آماده شد؛ ${faNum(missing)} سؤال دیگر در حال ساخته شدن است…`);
       const avoid = pool.map(q => q.question);
+      // همهٔ بخش‌ها هم‌زمان ساخته می‌شوند (حداکثر ۵ درخواست برای ۲۰ سؤال).
+      const base = pool.length;
       const results = await Promise.all(sizes.map((size, i) =>
-        fetchBatch(grade, count, size, topic, HINTS[(pool.length + i) % HINTS.length], avoid)));
+        fetchBatch(grade, count, size, topic, HINTS[(base + i) % HINTS.length], avoid)));
+      const seen = new Set(pool.map(q => q.question));
       results.forEach(r => {
-        if (r.items.length) pool.push(...r.items);
-        else if (r.error) lastError = r.error;
+        if (r.items.length) {
+          r.items.forEach(q => {
+            if (!seen.has(q.question)) { seen.add(q.question); pool.push(q); }
+          });
+        } else if (r.error) lastError = r.error;
       });
     }
     pool = pool.slice(0, count);
@@ -220,7 +226,7 @@
 
   createButton.addEventListener('click', async () => {
     if (busy) return;
-    const count = Math.min(MAX_Q, Math.max(MIN_Q, Math.trunc(Number(countInput.value)) || 8));
+    const count = Math.min(MAX_Q, Math.max(MIN_Q, Math.trunc(Number(toLatin(countInput.value))) || 12));
     countInput.value = count;
     const grade = gradeSelect.value;
     const topic = topicInput.value.trim().slice(0, 80);

@@ -1,20 +1,9 @@
 'use strict';
 (() => {
  const $=id=>document.getElementById(id); let expression='';
- const exprOut=$('calcExpression'), resultOut=$('calcResult');
+ window.samFactorial=n=>{if(!Number.isInteger(n)||n<0||n>170)throw Error('فاکتوریل فقط برای عدد صحیح ۰ تا ۱۷۰ محاسبه می‌شود.');let r=1;for(let i=2;i<=n;i++)r*=i;return r;};
  function gcd(a,b){a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));while(b){[a,b]=[b,a%b]}return a||1}
  function fmt(n){if(!Number.isFinite(n))throw Error('این عبارت جواب معتبر ندارد.');if(Math.abs(n)<1e-12)n=0;return Number(n.toPrecision(12)).toString()}
- function calculate(raw){raw=window.SAMNormalizeDigits?window.SAMNormalizeDigits(raw):String(raw).replace(/[۰-۹٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.includes(d)?'۰۱۲۳۴۵۶۷۸۹'.indexOf(d):'٠١٢٣٤٥٦٧٨٩'.indexOf(d));let s=raw.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/π/g,'pi').replace(/√\(/g,'sqrt(').replace(/\^/g,'**').replace(/%/g,'/100');
-   if(!s.trim())throw Error('اول یک عبارت وارد کن.');
-   if(!/^[0-9+\-*/().,\sA-Za-z_]*$/.test(s))throw Error('این علامت در ماشین‌حساب پشتیبانی نمی‌شود.');
-   s=s.replace(/\bpi\b/gi,'Math.PI').replace(/\bsqrt\s*\(/gi,'Math.sqrt(').replace(/\bsin\s*\(/gi,'Math.sin(').replace(/\bcos\s*\(/gi,'Math.cos(').replace(/\btan\s*\(/gi,'Math.tan(').replace(/\blog\s*\(/gi,'Math.log10(').replace(/\bln\s*\(/gi,'Math.log(').replace(/\babs\s*\(/gi,'Math.abs(').replace(/\be\b/g,'Math.E');
-   if(/[A-Za-z_]/.test(s.replace(/Math\.(PI|E|sqrt|sin|cos|tan|log10|log|abs)/g,'')))throw Error('تابع یا نماد ناشناخته است.');
-   const val=Function('"use strict"; return ('+s+')')(); return fmt(val);
- }
- function update(){exprOut.textContent=expression||'0';try{resultOut.textContent=expression?calculate(expression):'نتیجه';resultOut.classList.remove('error')}catch(e){resultOut.textContent=expression?'…':'نتیجه';resultOut.classList.remove('error')}}
- function press(k){if(k==='AC'){expression='';update();return}if(k==='DEL'){expression=expression.slice(0,-1);update();return}if(k==='='){try{const v=calculate(expression);expression=v;exprOut.textContent=expression;resultOut.textContent='= '+v;resultOut.classList.remove('error')}catch(e){resultOut.textContent=e.message;resultOut.classList.add('error')}return}if(k==='square'){expression=expression?`(${expression})^2`:'';update();return}if(k==='pi')expression+='pi';else expression+=k;update()}
- $('calcKeys').addEventListener('click',e=>{const b=e.target.closest('button[data-key]');if(b)press(b.dataset.key)});
- document.addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;if(/^[0-9().+\-*/^]$/.test(e.key)){expression+=e.key;update()}else if(e.key==='Enter'){e.preventDefault();press('=')}else if(e.key==='Backspace'){press('DEL')}else if(e.key==='Escape'){press('AC')}});
  function val(id){const raw=window.SAMNormalizeDigits?window.SAMNormalizeDigits($(id).value):String($(id).value).replace(/[۰-۹٠-٩]/g,d=>String('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩'.indexOf(d)%10));return Number(raw)}function out(id,text,bad=false){$(id).textContent=text;$(id).classList.toggle('error',bad)}
  const faDigits=s=>String(s).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 
@@ -157,7 +146,7 @@
  }
  document.querySelectorAll('.nav-item[data-mode]').forEach(btn=>btn.addEventListener('click',()=>showMode(btn.dataset.mode)));
  // پشتیبانی از آدرس‌هایی مثل index.html?mode=tools (دستیار صوتی و لینک‌ها از این استفاده می‌کنند)
- try{const m=new URLSearchParams(location.search).get('mode');if(m&&modeInfo[m])showMode(m)}catch(_){}
+ try{const m=new URLSearchParams(location.search).get('mode');showMode(m&&modeInfo[m]?m:'tools')}catch(_){showMode('tools')}
 
  $('themeBtn').onclick=()=>{document.body.classList.toggle('light');localStorage.setItem('sam-math-light',document.body.classList.contains('light')?'1':'0')};if(localStorage.getItem('sam-math-light')==='1')document.body.classList.add('light');
  renderTopics();

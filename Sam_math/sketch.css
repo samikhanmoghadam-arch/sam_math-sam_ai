@@ -97,3 +97,5 @@ input:focus, textarea:focus, select:focus { outline:2px solid rgba(103,232,249,.
   body::before, body::after { animation:none; }
   *, *::before, *::after { scroll-behavior:auto !important; transition:none !important; }
 }
+
+.sk-upload-btn{display:inline-flex;align-items:center;padding:8px 12px;border-radius:10px;background:#344f8c;color:#fff;cursor:pointer;font-weight:800}.sk-upload-btn:hover{filter:brightness(1.15)}

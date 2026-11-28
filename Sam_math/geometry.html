@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="icons/favicon-32.png?v=3" sizes="32x32" type="image/png"><link rel="icon" href="icons/favicon-48.png?v=3" sizes="48x48" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=3">
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-title" content="SAM MATH">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,6 +11,7 @@
   <meta name="theme-color" content="#080d19">
   <title>SAM MATH | Geometry Studio</title>
   <link rel="stylesheet" href="geometry.css">
+<link rel="stylesheet" href="ggb-upgrade.css">
 </head>
 <body>
 
@@ -39,7 +40,22 @@
     </div>
   </header>
 
-  <main class="workspace">
+  
+<section class="ggb-studio">
+  <div class="ggb-heading"><div><p class="ggb-kicker">SAM MATH · DYNAMIC MATHEMATICS</p><h1>هندسه‌دان هوشمند | GeoGebra Studio</h1><p>محیط کامل GeoGebra Classic در کنار ابزارهای اختصاصی SAM MATH</p></div><span class="ggb-live">● فضای تعاملی</span></div>
+  <div class="ggb-tabs"><button class="ggb-tab active" data-view="classic">GeoGebra کامل</button><button class="ggb-tab" data-view="native">ابزارهای اختصاصی SAM</button></div>
+  <div id="ggbClassicView" class="ggb-classic-view">
+    <div id="ggb-element"><div class="ggb-loading">در حال بارگذاری محیط GeoGebra… برای استفاده از نسخهٔ کامل به اینترنت نیاز است.</div></div>
+    <div class="ggb-ai"><div><h2>✦ دستیار هندسهٔ SAM AI</h2><p>درخواستت را فارسی بنویس؛ می‌تواند دربارهٔ هندسه توضیح بدهد یا دستورهای ساخت شکل را در محیط GeoGebra اجرا کند.</p></div>
+      <div class="ggb-chat-row"><input id="ggbPrompt" placeholder="مثلاً دایره‌ای به شعاع ۳ با مرکز مبدأ رسم کن و نقطه A را روی آن بگذار"><button id="ggbAsk" type="button">اجرا ✦</button></div>
+      <div id="ggbAnswer" class="ggb-answer" aria-live="polite">آماده‌ام؛ یک دستور هندسی بنویس.</div>
+      <div class="ggb-shortcuts"><button data-ggb="Circle((0,0),3)">دایره با شعاع ۳</button><button data-ggb="Polygon((0,0),(4,0),(2,3))">مثلث</button><button data-ggb="Reflect(A,xAxis)">قرینه نسبت به محور x</button><button data-ggb="f(x)=x^2">نمودار سهمی</button></div>
+    </div>
+  </div>
+  <div id="ggbNativeView" hidden><p>محیط هندسهٔ اختصاصی قبلی SAM MATH در پایین صفحه قرار دارد.</p></div>
+</section>
+
+<main class="workspace">
     <aside class="sidebar">
       <div class="dim-switch" role="group" aria-label="حالت نمایش">
         <button type="button" class="dim-btn active" data-dim="2d">دو‌بعدی</button>
@@ -249,5 +265,7 @@
   <script src="geometry.js"></script>
   <script src="geometry3d.js"></script>
   <script src="sam-voice.js" defer></script>
+<script src="https://www.geogebra.org/apps/deployggb.js"></script>
+<script src="ggb-upgrade.js" defer></script>
 </body>
 </html>

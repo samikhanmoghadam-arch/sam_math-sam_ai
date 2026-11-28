@@ -32,7 +32,8 @@
         "portable",
         "nsis"
       ],
-      "artifactName": "SAM-MATH-${version}-${arch}.${ext}"
+      "artifactName": "SAM-MATH-${version}-${arch}.${ext}",
+      "icon": "icons/icon-512.png"
     },
     "nsis": {
       "oneClick": false,

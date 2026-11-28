@@ -1,0 +1,73 @@
+/* SAM MATH: آرکید ریاضی (نسخهٔ کامل) */
+.arcade-pro{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#141d35,#0f162a);box-sizing:border-box;max-width:100%;overflow:hidden}
+.arcade-pro *{box-sizing:border-box}
+.arcade-pro h2{margin:0 0 6px;font-size:1.25rem}
+.arcade-pro .ap-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.arcade-pro label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:.82rem;min-width:0}
+.arcade-pro select,.arcade-pro input{min-width:0;border-radius:10px;padding:9px 10px;background:#0a1020;border:1px solid #33415f;color:var(--text);font:inherit}
+.arcade-pro .ap-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.arcade-pro .ap-tab{border:1px solid #506ba6;background:#17294d;color:#fff;border-radius:12px;padding:9px 12px;font:inherit;font-size:.9rem;cursor:pointer;touch-action:manipulation}
+.arcade-pro .ap-tab.active{background:linear-gradient(120deg,#8b5cf6,#0891b2);border-color:transparent}
+.arcade-pro .ap-view{display:block}
+.arcade-pro .ap-view[hidden]{display:none!important}
+.arcade-pro .ap-help{color:var(--muted);font-size:.86rem;line-height:1.8;margin:0 0 12px}
+.arcade-pro .ap-hud{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.arcade-pro .ap-hud span{background:#0b1224;border:1px solid var(--line);border-radius:12px;padding:7px 11px;font-size:.88rem;color:var(--muted)}
+.arcade-pro .ap-hud strong{color:var(--cyan)}
+.arcade-pro .ap-btn{border:0;border-radius:11px;padding:10px 15px;background:linear-gradient(120deg,#8b5cf6,#0891b2);color:#fff;font:inherit;font-weight:700;cursor:pointer;touch-action:manipulation}
+.arcade-pro .ap-btn.ghost{background:#1b2743;border:1px solid #506ba6}
+.arcade-pro .ap-btn:disabled{opacity:.45;cursor:default}
+.arcade-pro .ap-msg{min-height:26px;margin:10px 0 0;color:#dbeafe;font-size:.95rem;line-height:1.8;overflow-wrap:anywhere}
+.arcade-pro .ap-msg.good{color:var(--good)}
+.arcade-pro .ap-msg.bad{color:#fda4af}
+.arcade-pro canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:14px;background:#070b17;border:1px solid #283553;touch-action:none;user-select:none}
+.arcade-pro .ap-card{background:#0b1224;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:10px}
+.arcade-pro .ap-q{font-size:1.15rem;direction:ltr;text-align:left;margin:4px 0 10px;color:var(--text)}
+.arcade-pro .ap-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.arcade-pro .ap-opt{border:1px solid #33415f;background:#1b2743;color:var(--text);border-radius:12px;padding:12px 8px;font:inherit;font-size:1.05rem;direction:ltr;cursor:pointer;touch-action:manipulation}
+.arcade-pro .ap-opt:hover:not(:disabled){border-color:var(--accent)}
+.arcade-pro .ap-opt.right{background:#065f46;border-color:var(--good)}
+.arcade-pro .ap-opt.wrong{background:#7f1d1d;border-color:#f87171}
+.arcade-pro .ap-opt:disabled{cursor:default}
+.arcade-pro .ap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:7px;max-width:100%}
+.arcade-pro .ap-cell{aspect-ratio:1;border-radius:12px;border:1px solid #33415f;background:#1b2743;color:var(--text);font:inherit;font-size:1rem;cursor:pointer;touch-action:manipulation;direction:ltr;padding:0}
+.arcade-pro .ap-cell.open{background:#0b1224;cursor:default}
+.arcade-pro .ap-cell.flip{background:#2b3d6b}
+.arcade-pro .ap-cell.match{background:#065f46;border-color:var(--good);cursor:default}
+.arcade-pro .ap-dots-wrap{overflow-x:auto;padding-bottom:6px}
+.arcade-pro .ap-dots{display:block;margin:auto;max-width:100%;height:auto;background:#070b17;border:1px solid #283553;border-radius:14px;touch-action:none}
+.arcade-pro .ap-scores{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.arcade-pro .ap-scores span{border-radius:12px;padding:8px 12px;background:#0b1224;border:1px solid var(--line);font-size:.9rem}
+.arcade-pro .ap-sudoku{display:grid;grid-template-columns:repeat(var(--n,9),minmax(0,1fr));gap:2px;max-width:420px;margin:auto;background:#33415f;padding:2px;border-radius:10px}
+.arcade-pro .ap-sudoku input{text-align:center;border:0;border-radius:4px;padding:0;aspect-ratio:1;font-size:1rem;background:#0b1224;color:var(--text);direction:ltr;width:100%}
+.arcade-pro .ap-sudoku input:disabled{background:#1b2743;color:var(--cyan);font-weight:700}
+.arcade-pro .ap-sudoku input.bad{background:#7f1d1d}
+.arcade-pro .ap-sudoku .thick-r{margin-bottom:2px}
+.arcade-pro .ap-pad{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+.arcade-pro .ap-pad button{min-width:44px;min-height:44px;border-radius:10px;border:1px solid #506ba6;background:#17294d;color:#fff;font:inherit;cursor:pointer}
+@media (max-width:520px){
+  .arcade-pro{padding:12px}
+  .arcade-pro .ap-opts{grid-template-columns:1fr}
+  .arcade-pro .ap-hud span{font-size:.8rem}
+}
+
+/* ---------- سودوکو و مربع جادویی ---------- */
+.ap-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.ap-msg.ap-bad{color:#fda4af}
+.sk-board,.mg-board{display:grid;grid-template-columns:repeat(var(--sk-n,9),1fr);max-width:min(92vw,420px);margin:12px auto;border:3px solid var(--accent);border-radius:12px;overflow:hidden}
+.mg-board{grid-template-columns:repeat(var(--mg-n,3),1fr)}
+.sk-cell,.mg-cell{aspect-ratio:1;min-height:0;padding:0;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:clamp(16px,4.5vw,24px);font-weight:700;cursor:pointer}
+.sk-cell.given{color:var(--cyan)}
+.sk-cell.same{background:#8b5cf633}
+.sk-cell.sel,.mg-cell.sel{background:#8b5cf6aa}
+.sk-cell.wrong,.mg-cell.wrong{color:#fda4af;background:#9f123944}
+.sk-gap-l{border-left:3px solid var(--accent)}
+.sk-gap-t{border-top:3px solid var(--accent)}
+.mg-cell.given{color:var(--cyan)}
+.sk-pad,.mg-pad{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.sk-pad button,.mg-pad button{min-width:44px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:700;font-size:18px;cursor:pointer}
+.mg-pad button.used{opacity:.45}
+.mg-lines{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.mg-line{padding:4px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.mg-line.ok{border-color:var(--good);color:var(--good)}
+.mg-line.bad{border-color:#f43f5e;color:#fda4af}

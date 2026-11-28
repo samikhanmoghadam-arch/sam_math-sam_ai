@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="icons/favicon-32.png?v=3" sizes="32x32" type="image/png"><link rel="icon" href="icons/favicon-48.png?v=3" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=3">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-title" content="SAM MATH">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#090d1d">
 <title>SAM MATH | دستیار هوشمند ریاضی </title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="theme-fun.css"><link rel="stylesheet" href="sam-features.css">
-<link rel="stylesheet" href="sam-tables.css"><script src="digit-normalizer.js" defer></script>
-<script src="app.js" defer></script><script src="sam-plain.js" defer></script><script src="exam.js" defer></script><script src="sci-modal.js" defer></script><script src="sam-features.js" defer></script><script src="sam-tables.js" defer></script>
+<link rel="stylesheet" href="sam-tables.css"><link rel="stylesheet" href="sam-upgrade.css"><link rel="stylesheet" href="arcade-pro.css"><link rel="stylesheet" href="calc-pro.css"><script src="digit-normalizer.js" defer></script>
+<script src="app.js" defer></script><script src="sam-plain.js" defer></script><script src="exam.js" defer></script><script src="sci-modal.js" defer></script><script src="sam-features.js" defer></script><script src="sam-tables.js" defer></script><script>window.SAM_ARCADE_PRO=true;</script><script src="arcade-pro.js" defer></script><script src="sam-upgrade.js" defer></script><script src="calc-pro.js" defer></script>
 </head>
 <body>
 
@@ -27,7 +27,7 @@
 </div>
 
 <header class="topbar"><a class="brand" href="#"><img class="brand-logo" src="sam-math-logo-160.png" alt="SAM MATH"></a><div class="top-actions"><span class="status"><i></i> دستیار ریاضی آفلاین</span><button id="themeBtn" class="icon-btn" title="تغییر پوسته">◐</button></div></header>
-<main class="layout"><aside class="sidebar"><p class="section-label">فضای یادگیری</p><button class="nav-item active" data-mode="calculator">▦ ماشین‌حساب</button><button class="nav-item" data-mode="tools">✦ ابزارهای ریاضی</button><button class="nav-item" data-mode="assistant">✧ دستیار ریاضی</button><button class="nav-item" data-mode="exam">✎ ساخت آزمون</button><button class="nav-item" data-mode="history">◈ تاریخچهٔ ریاضیات ایران</button><button class="nav-item" data-mode="challenge">Δ چالش ذهنی</button><button class="nav-item" data-mode="progress">Σ پیشرفت من</button><a class="nav-item" href="geometry.html">△ هندسه</a><a class="nav-item" href="sketch.html">✎ چک‌نویس هوشمند</a><a class="nav-item sam-ai-nav" href="sam-ai.html">✦ SAM AI · دستیار هوشمند</a><div class="sidebar-note"><span>✦</span><strong>فکر کن، امتحان کن، یاد بگیر. </strong><p>ابزارهای ریاضی در دسترس تو</p></div></aside>
+<main class="layout"><aside class="sidebar"><p class="section-label">فضای یادگیری</p><button class="nav-item active" data-mode="tools">✦ ابزارهای ریاضی</button><button class="nav-item" data-mode="calculator">▦ ماشین‌حساب</button><button class="nav-item" data-mode="assistant">✧ دستیار ریاضی</button><button class="nav-item" data-mode="exam">✎ ساخت آزمون</button><button class="nav-item" data-mode="history">◈ تاریخچهٔ ریاضیات ایران</button><button class="nav-item" data-mode="challenge">Δ چالش ذهنی</button><button class="nav-item" data-mode="progress">Σ پیشرفت من</button><a class="nav-item" href="geometry.html">△ هندسه</a><a class="nav-item" href="sketch.html">✎ چک‌نویس هوشمند</a><a class="nav-item sam-ai-nav" href="sam-ai.html">✦ SAM AI · دستیار هوشمند</a><div class="sidebar-note"><span>✦</span><strong>فکر کن، امتحان کن، یاد بگیر. </strong><p>ابزارهای ریاضی در دسترس تو</p></div></aside>
 <section class="workspace"><div class="page-heading"><div><p class="eyebrow">YOUR OFFLINE MATH COMPANION</p><h1 id="pageTitle">ماشین‌حساب علمی</h1><p id="pageDescription">با دکمه‌ها حساب کن؛ دنیای حساب</p></div></div>
 <section id="calculatorPanel" class="panel calculator-panel"><div class="calc-display"><div id="calcExpression" class="calc-expression">0</div><div id="calcResult" class="calc-result">نتیجه</div></div><div class="calc-grid" id="calcKeys">
 <button data-key="AC" class="key key-special">AC</button><button data-key="DEL" class="key key-special">⌫</button><button data-key="(" class="key">(</button><button data-key=")" class="key">)</button>
@@ -38,6 +38,9 @@
 <button data-key="sqrt(" class="key key-function">√</button><button data-key="square" class="key key-function">x²</button><button data-key="pi" class="key key-function">π</button><button data-key="=" class="key key-equals">=</button>
 <button data-key="sin(" class="key key-function">sin</button><button data-key="cos(" class="key key-function">cos</button><button data-key="tan(" class="key key-function">tan</button><button data-key="log(" class="key key-function">log</button>
 <button data-key="ln(" class="key key-function">ln</button><button data-key="abs(" class="key key-function">|x|</button><button data-key="e" class="key key-function">e</button><button data-key="%" class="key key-function">%</button>
+<button data-key="asin(" class="key key-function">sin⁻¹</button><button data-key="acos(" class="key key-function">cos⁻¹</button><button data-key="atan(" class="key key-function">tan⁻¹</button><button data-key="cbrt(" class="key key-function">∛</button>
+<button data-key="sinh(" class="key key-function">sinh</button><button data-key="cosh(" class="key key-function">cosh</button><button data-key="tanh(" class="key key-function">tanh</button><button data-key="fact(" class="key key-function">n!</button>
+<button data-key="floor(" class="key key-function">floor</button><button data-key="ceil(" class="key key-function">ceil</button><button data-key="round(" class="key key-function">round</button><button data-key="exp(" class="key key-function">eˣ</button>
 </div><p class="hint">برای توابع مثلثاتی، زاویه بر حسب رادیان است. می‌توانی از کیبورد هم استفاده کنی.</p><div class="calc-extras"><button id="copyResult" class="ghost-btn" type="button">📋 کپی جواب</button></div><div class="calc-history"><div class="calc-history-head"><h3>۱۰ محاسبهٔ آخر</h3><button id="clearCalcHistory" class="ghost-btn" type="button">پاک کردن</button></div><ul id="calcHistoryList" class="calc-history-list"></ul><p class="hint">روی هر مورد بزنی، جوابش کپی می‌شود.</p></div></section>
 <section id="toolsPanel" class="panel" hidden><h2>ابزارهای ریاضی</h2><div class="tools-grid">
 <article class="tool-card"><h3>معادلهٔ درجهٔ اول</h3><p>به شکل ax + b = c</p><div class="fields"><label>a<input id="linearA" type="text" inputmode="decimal" autocomplete="off" value="2"></label><label>b<input id="linearB" type="text" inputmode="decimal" autocomplete="off" value="3"></label><label>c<input id="linearC" type="text" inputmode="decimal" autocomplete="off" value="11"></label></div><button class="primary-btn" id="solveLinear">حل معادله</button><p class="result" id="linearResult">جواب اینجا نمایش داده می‌شود.</p></article>
@@ -89,7 +92,7 @@
 <pre class="sun-proof" id="sunCheckOut">نتیجه و اثبات اینجا می‌آید.</pre></div>
 <p class="hint">نکته: این دستیار کاملاً آفلاین کار می‌کند و توضیح‌های آماده دارد. برای پرسش آزاد و پاسخ هوشمند، از «SAM AI» در منو استفاده کن.</p></section>
 <section id="examPanel" class="panel" hidden><h2>ساخت آزمون ریاضی</h2><p class="hint">پایه و تعداد سؤال را انتخاب کن؛ هوش مصنوعی آزمون چهارگزینه‌ای می‌سازد. بعد از پاسخ‌دادن، پاسخ‌نامه و توضیح هر سؤال را می‌بینی.</p>
-<div class="fields exam-setup"><label>پایه<select id="examGrade"><optgroup label="دورهٔ ابتدایی"><option>اول</option><option>دوم</option><option>سوم</option><option>چهارم</option><option>پنجم</option><option>ششم</option></optgroup><optgroup label="متوسطهٔ اول"><option>هفتم</option><option selected>هشتم</option><option>نهم</option></optgroup><optgroup label="متوسطهٔ دوم"><option>دهم</option><option>یازدهم</option><option>دوازدهم</option></optgroup></select></label><label>تعداد سؤال (۳ تا ۸)<input id="examCount" type="text" inputmode="decimal" autocomplete="off" min="3" max="8" value="8"></label><label>موضوع (اختیاری)<input id="examTopic" type="text" maxlength="80" placeholder="مثلاً کسرها، معادله"></label></div>
+<div class="fields exam-setup"><label>پایه<select id="examGrade"><optgroup label="دورهٔ ابتدایی"><option>اول</option><option>دوم</option><option>سوم</option><option>چهارم</option><option>پنجم</option><option>ششم</option></optgroup><optgroup label="متوسطهٔ اول"><option>هفتم</option><option selected>هشتم</option><option>نهم</option></optgroup><optgroup label="متوسطهٔ دوم"><option>دهم</option><option>یازدهم</option><option>دوازدهم</option></optgroup></select></label><label>تعداد سؤال (۳ تا ۲۰)<input id="examCount" type="text" inputmode="numeric" autocomplete="off" min="3" max="20" value="12"></label><label>موضوع (اختیاری)<input id="examTopic" type="text" maxlength="80" placeholder="مثلاً کسرها، معادله"></label></div>
 <button class="primary-btn" id="examCreate">ساخت آزمون</button>
 <p id="examStatus" class="result">یک پایه و تعداد سؤال انتخاب کن و آزمون بساز.</p>
 <div id="examQuiz" class="exam-list"></div>
@@ -111,6 +114,12 @@
 <li class="timeline-item"><div class="timeline-card"><span class="tl-year">درگذشتهٔ ۱۴۲۹ میلادی · سمرقند</span><h3>غیاث‌الدین جمشید کاشانی</h3><p class="tl-role">ریاضی‌دان و منجم در رصدخانهٔ الغ‌بیگ</p><p>در رسالهٔ «محیطیه» مقدار π را تا ۱۶ رقم اعشار محاسبه کرد؛ رکوردی که حدود دو قرن پابرجا ماند. در کتاب «مفتاح الحساب» (کلید حساب) کسرهای اعشاری را منظم و کاربردی کرد.</p><p class="tl-fact">می‌دانستی؟ کاشانی در کتاب «مفتاح الحساب» کسرهای اعشاری را به شکلی منظم و کاربردی شرح داد؛ نوشتن اعداد با ممیز اعشار در محاسبات امروز ریشه در همین کارها دارد.</p></div></li>
 <li class="timeline-item tl-era"><span>ریاضیات معاصر ایران</span></li>
 <li class="timeline-item"><div class="timeline-card"><span class="tl-year">۱۳۵۶ تا ۱۳۹۶ خورشیدی · تهران، استنفورد</span><h3>مریم میرزاخانی</h3><p class="tl-role">ریاضی‌دان</p><p>نخستین زن و نخستین ایرانی که در سال ۲۰۱۴ میلادی مدال فیلدز را گرفت؛ جایزه‌ای معتبر در ریاضیات. کارهای او دربارهٔ دینامیک و هندسهٔ سطوح ریمانی و فضاهای مدولی بود.</p></div></li>
+<li class="timeline-item tl-era"><span>گسترش دانش در جهان و دوران معاصر</span></li>
+<li class="timeline-item"><div class="timeline-card"><span class="tl-year">قرن پانزدهم میلادی · سمرقند</span><h3>غیاث‌الدین جمشید کاشانی</h3><p>در محاسبات عددی و تقریب عدد پی مهارت چشمگیری داشت. روش‌های دقیق محاسبهٔ اعشار و ابزارهای نجومی را توسعه داد و در رصدخانهٔ سمرقند فعالیت کرد.</p></div></li>
+<li class="timeline-item"><div class="timeline-card"><span class="tl-year">قرن پانزدهم میلادی · سمرقند</span><h3>الغ‌بیگ و مکتب سمرقند</h3><p>رصدخانهٔ سمرقند به مرکزی برای اندازه‌گیری‌های نجومی و محاسبات مثلثاتی تبدیل شد. جدول‌های دقیق ستاره‌ای و مثلثاتی این مکتب برای نسل‌های بعد اهمیت داشتند.</p></div></li>
+<li class="timeline-item"><div class="timeline-card"><span class="tl-year">قرن نوزدهم میلادی</span><h3>مدرسهٔ دارالفنون و آموزش نوین</h3><p>با تأسیس دارالفنون، آموزش سازمان‌یافتهٔ ریاضیات، هندسه، نقشه‌برداری و علوم مهندسی گسترش یافت. کتاب‌های درسی و ترجمه‌های علمی نقش مهمی در آشنایی با ریاضیات جدید داشتند.</p></div></li>
+<li class="timeline-item"><div class="timeline-card"><span class="tl-year">۱۹۷۷ تا ۲۰۱۷ میلادی</span><h3>مریم میرزاخانی</h3><p class="tl-role">ریاضی‌دان برجستهٔ ایرانی و استاد دانشگاه استنفورد</p><p>در هندسه و سامانه‌های دینامیکی پژوهش کرد و در سال ۲۰۱۴ نخستین زنی شد که مدال فیلدز را دریافت کرد. کارهای او دربارهٔ هندسهٔ سطوح و فضاهای پیمانه‌ای تأثیرگذار بود.</p><p class="tl-fact">می‌دانستی؟ مدال فیلدز یکی از معتبرترین جایزه‌های ریاضیات جهان است.</p></div></li>
+<li class="timeline-item"><div class="timeline-card"><span class="tl-year">دوران معاصر</span><h3>ریاضیات در دانشگاه‌ها و فناوری ایران</h3><p>امروزه پژوهشگران ایرانی در حوزه‌هایی مانند نظریهٔ اعداد، بهینه‌سازی، آمار، رمزنگاری، هوش مصنوعی و علوم داده فعالیت می‌کنند. ریاضیات پایهٔ بسیاری از فناوری‌های روز، از ارتباطات امن تا یادگیری ماشین است.</p></div></li>
 </ol></section>
 <section id="challengePanel" class="panel" hidden><h2>چالش ذهنی | آرکید ریاضی</h2>
 <p class="hint">بیش از ۴۰ بازی در ۴ سطح؛ اگر جواب غلط بدهی، جواب درست همان لحظه نشان داده می‌شود و در پایان بازی همهٔ اشتباهاتت مرور می‌شود.</p>
@@ -123,7 +132,7 @@
 <p id="chFeedback" class="result" role="status"></p></section>
 
 <section id="progressPanel" class="panel" hidden><h2>پیشرفت من | کارنامهٔ بازی‌ها</h2>
-<div class="progress-hero"><div class="avatar-big" aria-hidden="true">✦</div><div><strong id="progName">مهمان</strong><p id="progJoined" class="hint"></p><p id="progSummary" class="hint"></p></div></div>
+<div class="progress-hero"><div class="avatar-big" aria-hidden="true">✦</div><div><strong id="progName"></strong><p id="progJoined" class="hint"></p><p id="progSummary" class="hint"></p></div></div>
 <div id="progStats" class="prog-stats"></div>
 <h3>نشان‌ها</h3><div id="progBadges" class="badge-grid"></div>
 <p class="hint">امتیاز و رکورد بازی‌ها در همین مرورگر ذخیره می‌شود؛ همگام‌سازی بین دستگاه‌ها نیازمند حساب کاربری و ذخیره‌سازی سروری است.</p></section>

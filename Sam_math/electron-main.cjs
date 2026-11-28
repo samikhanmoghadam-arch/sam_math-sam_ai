@@ -3,7 +3,7 @@ const path = require('node:path');
 function createWindow() {
   const win = new BrowserWindow({
     width: 1280, height: 850, minWidth: 900, minHeight: 650,
-    title: 'SAM MATH', autoHideMenuBar: true, backgroundColor: '#090d1d',
+    title: 'SAM MATH', autoHideMenuBar: true, backgroundColor: '#090d1d', icon: path.join(__dirname, 'icons', 'icon-512.png'),
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   win.loadFile(path.join(__dirname, 'index.html'));

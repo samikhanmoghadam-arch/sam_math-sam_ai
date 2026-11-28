@@ -70,11 +70,9 @@
     }
     return id;
   }
-  const getProfile = () => null;
+  const getProfile = () => read(KEYS.profile, {});
   const message = $('message');
   function setMessage(text) { if (message) message.textContent = text; }
-  // اطلاعات پروفایل قدیمی پاک می‌شود تا هیچ حساب یا ایمیل قبلی فعال نماند.
-  try { localStorage.removeItem(KEYS.profile); } catch { /* ignore */ }
 
   /* ---------- آمار و نشان‌ها ---------- */
   const getStats = () => ({ calcs: 0, tools: 0, games: 0, correct: 0, bestScore: 0, ...read(KEYS.stats, {}) });
@@ -126,6 +124,11 @@
 
     const unlocked = BADGES.filter(b => b.ok(stats)).length;
     $('progSummary').textContent = `${faDigits(unlocked)} از ${faDigits(BADGES.length)} نشان گرفته‌ای. ادامه بده!`;
+    const rank = $('progTitle');
+    if (rank) {
+      const title = stats.bestScore >= 500 ? 'قهرمان آرکید' : stats.bestScore >= 250 ? 'استاد سرعت' : stats.games >= 5 ? 'بازیکن حرفه‌ای' : stats.tools >= 5 ? 'دانشمند کنجکاو' : stats.calcs >= 10 ? 'حسابگر ماهر' : 'تازه‌وارد';
+      rank.textContent = 'لقب تو: ' + title;
+    }
   }
 
   /* ---------- ماشین‌حساب: تاریخچه و کپی ---------- */

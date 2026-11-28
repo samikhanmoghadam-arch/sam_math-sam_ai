@@ -1,0 +1,71 @@
+/* SAM MATH: ماشین‌حساب چندحالته. از متغیرهای پوسته استفاده می‌کند تا در حالت روشن و تاریک درست باشد. */
+#calculatorPanel { overflow-x: hidden; }
+#calculatorPanel[hidden], #calculatorPanel .cp-panel[hidden] { display: none !important; }
+
+.cp-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.cp-tab {
+  min-height: 44px; padding: 8px 14px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel2); color: var(--muted);
+  font-weight: 700; font-size: .92rem; transition: background .15s, color .15s, border-color .15s;
+}
+.cp-tab:hover { color: var(--text); border-color: var(--accent); }
+.cp-tab.active { background: linear-gradient(120deg, #8b5cf6, #0891b2); color: #fff; border-color: transparent; }
+
+.cp-status { display: block; font-size: .78rem; color: var(--cyan); letter-spacing: .04em; margin-bottom: 6px; direction: ltr; text-align: left; }
+
+.cp-base-bar { display: flex; gap: 8px; margin: 0 0 12px; flex-wrap: wrap; }
+.cp-base { flex: 1 1 0; min-width: 64px; min-height: 44px; border-radius: 12px; cursor: pointer; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font-weight: 700; }
+.cp-base.active { background: var(--accent); color: #fff; border-color: transparent; }
+
+.cp-bases { display: grid; gap: 6px; margin: 0 0 14px; }
+.cp-base-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; background: var(--panel2); font-size: .85rem; color: var(--muted); }
+.cp-base-row strong { color: var(--text); direction: ltr; font-family: ui-monospace, Consolas, monospace; font-size: .95rem; overflow-wrap: anywhere; text-align: left; min-width: 0; }
+
+/* کلیدها: ۴ یا ۶ ستون، با اندازهٔ لمسی مناسب */
+#calcKeys.cp-grid { grid-template-columns: repeat(var(--cp-cols, 4), minmax(0, 1fr)); gap: 8px; }
+#calcKeys .cp-k { min-height: 48px; padding: 4px 2px; font-size: 1rem; min-width: 0; overflow-wrap: anywhere; line-height: 1.2; }
+#calcKeys .cp-w2 { grid-column: span 2; }
+#calcKeys .cp-w3 { grid-column: span 3; }
+#calcKeys .cp-w6 { grid-column: span 6; }
+#calcKeys .key-mode { background: #12313e; color: #a5f3fc; font-size: .9rem; }
+#calcKeys .key-mem { background: #2a2a4a; color: #c7d2fe; font-size: .9rem; }
+#calcKeys .key-hex { background: #1d2a4d; color: #bae6fd; }
+#calcKeys .key-fn { font-size: .92rem; }
+#calcKeys .cp-off, #calcKeys button:disabled { opacity: .3; cursor: not-allowed; transform: none !important; }
+#calcKeys .key-equals { font-size: 1.3rem; }
+
+.cp-hx-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; max-height: 260px; overflow: auto; }
+.cp-hx { width: 100%; min-height: 44px; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); cursor: pointer; direction: ltr; }
+.cp-hx:hover { border-color: var(--accent); }
+.cp-hx-expr { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+.cp-hx strong { font-size: 1rem; color: var(--cyan); overflow-wrap: anywhere; }
+.cp-history { margin-top: 18px; }
+.cp-history-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cp-history-head h3 { margin: 0; font-size: 1rem; }
+.cp-history-head .ghost-btn { min-height: 44px; }
+
+/* حالت‌های تاریخ و تبدیل واحد */
+.cp-panel { display: grid; gap: 14px; }
+.cp-card { padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--panel2); min-width: 0; }
+.cp-card h3 { margin: 0 0 10px; font-size: 1rem; }
+.cp-date-field { display: grid; gap: 6px; margin-bottom: 12px; min-width: 0; }
+.cp-field-title, .cp-label > span { font-size: .82rem; color: var(--muted); }
+.cp-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.cp-row > * { flex: 1 1 90px; min-width: 0; }
+.cp-row > .cp-swap { flex: 0 0 auto; }
+.cp-label { display: grid; gap: 6px; min-width: 0; }
+.cp-greg { color: var(--cyan); font-size: .85rem; }
+.cp-err { color: #fda4af; margin: 6px 0 0; font-size: .85rem; }
+.cp-panel input, .cp-panel select { min-height: 44px; }
+.cp-panel .result { white-space: pre-wrap; margin-top: 10px; }
+.cp-unit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.cp-swap { min-height: 44px; padding: 8px 14px; }
+
+@media (max-width: 520px) {
+  #calcKeys.cp-grid { gap: 6px; }
+  #calcKeys .cp-k { min-height: 46px; font-size: .92rem; }
+  #calcKeys .key-equals { font-size: 1.15rem; }
+  .cp-tab { flex: 1 1 calc(50% - 8px); padding: 8px 6px; font-size: .85rem; }
+  .cp-unit-grid { grid-template-columns: 1fr; }
+  .cp-hx strong { font-size: .92rem; }
+}
